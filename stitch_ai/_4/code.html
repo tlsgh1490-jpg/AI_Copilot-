@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={theme:{extend:{"colors":{"tertiary-fixed-dim":"#adc7ff","primary-fixed-dim":"#b7c8de","secondary-fixed-dim":"#76d6d5","primary":"#041627","surface-container-high":"#e9e7e9","surface-container-low":"#f5f3f4","error-container":"#ffdad6","tertiary":"#001435","outline":"#74777d","on-surface":"#1b1c1d","inverse-primary":"#b7c8de","on-secondary-fixed":"#002020","background":"#fbf9fa","surface-dim":"#dbd9db","on-primary":"#ffffff","surface-container-highest":"#e4e2e3","secondary-container":"#90efef","on-tertiary":"#ffffff","on-primary-fixed":"#0b1d2d","on-tertiary-fixed-variant":"#004493","on-error":"#ffffff","on-secondary":"#ffffff","surface-container":"#efedef","surface-container-lowest":"#ffffff","tertiary-fixed":"#d8e2ff","primary-fixed":"#d2e4fb","inverse-on-surface":"#f2f0f2","secondary-fixed":"#93f2f2","on-tertiary-container":"#4a8eff","surface-tint":"#4f6073","on-secondary-fixed-variant":"#004f4f","surface-bright":"#fbf9fa","on-tertiary-fixed":"#001a41","inverse-surface":"#303032","on-secondary-container":"#006e6e","on-surface-variant":"#44474c","primary-container":"#1a2b3c","error":"#ba1a1a","on-primary-fixed-variant":"#38485a","on-background":"#1b1c1d","secondary":"#006a6a","on-error-container":"#93000a","on-primary-container":"#8192a7","tertiary-container":"#00285b","outline-variant":"#c4c6cd","surface":"#fbf9fa","surface-variant":"#e4e2e3"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin_desktop":"2rem","gutter":"1.5rem","sidebar_width":"260px","stack_gap_md":"1rem","stack_gap_sm":"0.5rem","container_max_width":"1440px","stack_gap_lg":"2rem"},"fontFamily":{"headline-sm":["Hanken Grotesk"],"headline-md":["Hanken Grotesk"],"label-caps":["JetBrains Mono"],"body-md":["Hanken Grotesk"],"display-lg":["Hanken Grotesk"],"body-lg":["Hanken Grotesk"],"data-numeral":["JetBrains Mono"]},"fontSize":{"headline-sm":["18px",{"lineHeight":"24px","fontWeight":"600"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],"label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"500"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"display-lg":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"data-numeral":["20px",{"lineHeight":"24px","fontWeight":"600"}]}}}}</script><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/></head><body class="bg-background font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-lowest border-r border-outline-variant z-50 flex flex-col pt-6"><div class="px-6 mb-8 flex flex-col gap-1"><span class="text-primary font-headline-sm text-headline-sm">코크스오븐가스</span><span class="text-secondary font-label-caps text-label-caps tracking-widest">AI ANALYSIS SYSTEM</span></div><nav class="flex-1 px-4 space-y-1" data-active-classes="bg-secondary-container text-on-secondary-container font-bold"><div class="space-y-1"><a class="flex items-center px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all group" href="#"><span class="material-symbols-outlined mr-3">home</span><span class="font-body-md text-body-md">통합 현황</span></a><div class="pl-10 space-y-1 mb-2"><a class="block py-1.5 text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Brief &amp; Copilot</a><a class="block py-1.5 text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">이상 진단</a><a class="block py-1.5 text-sm font-bold text-secondary bg-secondary/5 px-3 rounded-md" href="#">원가 영향</a></div></div><a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" href="#"><span class="material-symbols-outlined mr-3">analytics</span><span class="font-body-md text-body-md">공정 데이터 분석</span></a><a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" href="#"><span class="material-symbols-outlined mr-3">book</span><span class="font-body-md text-body-md">기준 체계</span></a></nav></aside><div class="pl-[260px]"><header class="fixed top-0 left-[260px] right-0 h-16 bg-surface/80 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-margin-desktop"><div class="flex items-center gap-4"></div><div class="flex items-center gap-6"><div class="flex items-center gap-3"><span class="text-on-surface-variant font-label-caps text-label-caps uppercase">데이터 기준</span><span class="text-on-surface font-data-numeral text-data-numeral">2025.12.31 06:00</span></div><div class="px-2 py-1 rounded border border-secondary bg-secondary/10"><span class="font-label-caps text-label-caps text-secondary">[합성 데이터]</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 min-h-screen bg-background p-margin-desktop"><div class="flex flex-col w-full">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface mb-1">원가 영향 분석</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">이벤트 기반 재무적 임팩트 추적</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center px-4 py-2 bg-surface-container-lowest rounded-lg shadow-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant mr-2">calendar_month</span>
+<span class="font-data-numeral text-data-numeral text-sm text-on-surface">2025-01-01 ~ 2025-01-31</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant ml-3 cursor-pointer">arrow_drop_down</span>
+</div>
+<div class="flex items-center px-4 py-2 bg-surface-container-lowest rounded-lg shadow-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant mr-2">filter_alt</span>
+<span class="font-body-md text-body-md font-medium text-on-surface">전체 이벤트</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant ml-3 cursor-pointer">arrow_drop_down</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-gutter mb-gutter"><div class="col-span-12 lg:col-span-3 bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/30 relative overflow-hidden"><div class="flex items-center justify-between mb-4"><h2 class="font-label-caps text-[12px] text-on-surface-variant uppercase tracking-wider">총 원가 영향</h2><span class="material-symbols-outlined text-error">trending_down</span></div><div class="flex items-baseline gap-1"><span class="font-data-numeral text-[32px] font-bold text-error">-45.2</span><span class="text-headline-sm text-error">M₩</span></div><div class="mt-4 pt-4 border-t border-outline-variant/10 flex items-center justify-between"><span class="text-[12px] text-on-surface-variant">전월 대비</span><span class="text-[13px] font-bold text-error">+12.4% ↑</span></div></div><div class="col-span-12 sm:col-span-4 lg:col-span-3 bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/20"><div class="flex items-center gap-2 mb-4"><span class="material-symbols-outlined text-[18px] text-error">local_fire_department</span><h3 class="text-[13px] font-medium text-on-surface-variant">가스비 영향</h3></div><div class="flex items-baseline gap-1 mb-3"><span class="font-data-numeral text-[24px] font-bold text-error">-62.8</span><span class="text-sm text-on-surface-variant">M₩</span></div><div class="text-[11px] text-on-surface-variant">사용량 8% 증가 (단가 유지)</div></div><div class="col-span-12 sm:col-span-4 lg:col-span-3 bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/20"><div class="flex items-center gap-2 mb-4"><span class="material-symbols-outlined text-[18px] text-secondary">science</span><h3 class="text-[13px] font-medium text-on-surface-variant">약품비 절감</h3></div><div class="flex items-baseline gap-1 mb-1"><span class="font-data-numeral text-[24px] font-bold text-secondary">+12.5</span><span class="text-sm text-on-surface-variant">M₩</span></div><div class="text-[12px] font-medium text-secondary mb-2">약품 투입량: 450kg (+12%)</div><div class="text-[11px] text-on-surface-variant">투입 효율 15% 개선</div></div><div class="col-span-12 sm:col-span-4 lg:col-span-3 bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/20"><div class="flex items-center gap-2 mb-4"><span class="material-symbols-outlined text-[18px] text-secondary">air</span><h3 class="text-[13px] font-medium text-on-surface-variant">스팀비 절감</h3></div><div class="flex items-baseline gap-1 mb-1"><span class="font-data-numeral text-[24px] font-bold text-secondary">+5.1</span><span class="text-sm text-on-surface-variant">M₩</span></div><div class="text-[12px] font-medium text-secondary mb-2">스팀 사용량: 1.2t (-5%)</div><div class="text-[11px] text-on-surface-variant">스팀 사용량 5% 감소</div></div></div>
+<div class="grid grid-cols-12 gap-gutter mb-gutter">
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 p-6 flex flex-col min-h-[360px]">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">월별 원가 영향 추이</h2>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 bg-error rounded-sm"></span>
+<span class="font-label-caps text-[11px] text-on-surface-variant">손실 (-)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 bg-secondary rounded-sm"></span>
+<span class="font-label-caps text-[11px] text-on-surface-variant">이익 (+)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-4 h-0.5 bg-primary rounded-full"></span>
+<span class="font-label-caps text-[11px] text-on-surface-variant">누적</span>
+</div>
+</div>
+</div>
+<div class="flex-1 relative w-full h-full min-h-[240px]">
+<svg class="w-full h-full absolute inset-0 preserve-3d" preserveaspectratio="none" viewbox="0 0 800 240">
+<line class="text-surface-container-highest" stroke="currentColor" stroke-dasharray="4 4" stroke-width="1" x1="40" x2="780" y1="40" y2="40"></line>
+<line class="text-surface-container-highest" stroke="currentColor" stroke-dasharray="4 4" stroke-width="1" x1="40" x2="780" y1="90" y2="90"></line>
+<line class="text-surface-variant" stroke="currentColor" stroke-width="1" x1="40" x2="780" y1="140" y2="140"></line>
+<line class="text-surface-container-highest" stroke="currentColor" stroke-dasharray="4 4" stroke-width="1" x1="40" x2="780" y1="190" y2="190"></line>
+<g transform="translate(80, 0)">
+<rect class="text-error" fill="currentColor" height="40" rx="2" width="24" x="0" y="140"></rect>
+<rect class="text-secondary" fill="currentColor" height="20" rx="2" width="24" x="28" y="120"></rect>
+</g>
+<g transform="translate(180, 0)">
+<rect class="text-error" fill="currentColor" height="55" rx="2" width="24" x="0" y="140"></rect>
+<rect class="text-secondary" fill="currentColor" height="25" rx="2" width="24" x="28" y="115"></rect>
+</g>
+<g transform="translate(280, 0)">
+<rect class="text-error" fill="currentColor" height="25" rx="2" width="24" x="0" y="140"></rect>
+<rect class="text-secondary" fill="currentColor" height="40" rx="2" width="24" x="28" y="100"></rect>
+</g>
+<g transform="translate(380, 0)">
+<rect class="text-error" fill="currentColor" height="70" rx="2" width="24" x="0" y="140"></rect>
+<rect class="text-secondary" fill="currentColor" height="15" rx="2" width="24" x="28" y="125"></rect>
+</g>
+<g transform="translate(480, 0)">
+<rect class="text-error" fill="currentColor" height="35" rx="2" width="24" x="0" y="140"></rect>
+<rect class="text-secondary" fill="currentColor" height="30" rx="2" width="24" x="28" y="110"></rect>
+</g>
+<g transform="translate(580, 0)">
+<rect class="text-error" fill="currentColor" height="80" rx="2" width="24" x="0" y="140"></rect>
+<rect class="text-secondary" fill="currentColor" height="20" rx="2" width="24" x="28" y="120"></rect>
+</g>
+<g transform="translate(680, 0)">
+<rect class="text-error" fill="currentColor" height="45" rx="2" width="24" x="0" y="140"></rect>
+<rect class="text-secondary" fill="currentColor" height="25" rx="2" width="24" x="28" y="115"></rect>
+</g>
+<polyline class="text-primary" fill="none" points="106,160 206,190 306,175 406,230 506,235 606,295 706,315" stroke="currentColor" stroke-width="2.5"></polyline>
+<circle class="text-primary" cx="106" cy="160" fill="currentColor" r="4"></circle>
+<circle class="text-primary" cx="206" cy="190" fill="currentColor" r="4"></circle>
+<circle class="text-primary" cx="306" cy="175" fill="currentColor" r="4"></circle>
+<circle class="text-primary" cx="406" cy="230" fill="currentColor" r="4"></circle>
+<circle class="text-primary" cx="506" cy="235" fill="currentColor" r="4"></circle>
+<circle class="text-primary" cx="606" cy="295" fill="currentColor" r="4"></circle>
+<circle class="text-primary" cx="706" cy="315" fill="currentColor" r="4"></circle>
+<text class="text-on-surface-variant" fill="currentColor" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="45">100M</text>
+<text class="text-on-surface-variant" fill="currentColor" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="95">50M</text>
+<text class="text-on-surface-variant" fill="currentColor" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="145">0</text>
+<text class="text-on-surface-variant" fill="currentColor" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="195">-50M</text>
+<text class="text-on-surface-variant" fill="currentColor" font-family="Hanken Grotesk" font-size="12" text-anchor="middle" x="106" y="220">7월</text>
+<text class="text-on-surface-variant" fill="currentColor" font-family="Hanken Grotesk" font-size="12" text-anchor="middle" x="206" y="220">8월</text>
+<text class="text-on-surface-variant" fill="currentColor" font-family="Hanken Grotesk" font-size="12" text-anchor="middle" x="306" y="220">9월</text>
+<text class="text-on-surface-variant" fill="currentColor" font-family="Hanken Grotesk" font-size="12" text-anchor="middle" x="406" y="220">10월</text>
+<text class="text-on-surface-variant" fill="currentColor" font-family="Hanken Grotesk" font-size="12" text-anchor="middle" x="506" y="220">11월</text>
+<text class="text-on-surface-variant" fill="currentColor" font-family="Hanken Grotesk" font-size="12" text-anchor="middle" x="606" y="220">12월</text>
+<text class="text-on-surface-variant" fill="currentColor" font-family="Hanken Grotesk" font-size="12" text-anchor="middle" x="706" y="220">1월</text>
+</svg>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 p-6 flex flex-col min-h-[360px]"><div class="flex items-center gap-2 mb-4"><span class="material-symbols-outlined text-[18px] text-error">local_fire_department</span><h3 class="text-[13px] font-medium text-on-surface-variant">가스비 영향</h3></div><div class="flex items-baseline gap-1 mb-3"><span class="font-data-numeral text-[24px] font-bold text-error">-62.8</span><span class="text-sm text-on-surface-variant">M₩</span></div><div class="text-[11px] text-on-surface-variant">사용량 8% 증가 (단가 유지)</div></div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 overflow-hidden mb-gutter">
+<div class="p-6 border-b border-surface-container-highest flex items-center justify-between bg-surface-bright">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">이벤트별 상세 내역</h2>
+<button class="flex items-center gap-2 text-primary hover:text-tertiary-container transition-colors">
+<span class="font-label-caps text-[13px]">CSV 다운로드</span>
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface border-b border-surface-container-highest"><th class="py-3 px-6 font-label-caps text-[12px] text-on-surface-variant font-medium tracking-wider w-1/4">이벤트 명</th><th class="py-3 px-6 font-label-caps text-[12px] text-on-surface-variant font-medium tracking-wider w-1/6">발생 기간</th><th class="py-3 px-6 font-label-caps text-[12px] text-on-surface-variant font-medium tracking-wider text-right">가스 (₩/Nm³)</th><th class="py-3 px-6 font-label-caps text-[12px] text-on-surface-variant font-medium tracking-wider text-right">약품 (₩/kg)</th><th class="py-3 px-6 font-label-caps text-[12px] text-on-surface-variant font-medium tracking-wider text-right">스팀 (₩/t)</th><th class="py-3 px-6 font-label-caps text-[12px] text-on-surface-variant font-medium tracking-wider text-right bg-surface-container-low/50">합계 (₩)</th></tr>
+</thead>
+<tbody class="font-body-md text-[14px]"><tr class="border-b border-surface-container-highest hover:bg-surface-container-low/30 transition-colors group"><td class="py-5 px-6"><div class="flex flex-col gap-1"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-error"></span><span class="font-bold text-on-surface">COG 압력 저하 이벤트 #102</span></div><span class="text-[11px] text-on-surface-variant ml-4">압력 변동으로 인한 가스 연소 효율 저하</span></div></td><td class="py-5 px-6"><div class="flex flex-col"><span class="font-data-numeral text-[13px] text-on-surface">01.12 ~ 01.14</span><span class="text-[11px] text-outline">지속시간: 48h</span></div></td><td class="py-5 px-6 text-right"><div class="flex flex-col"><span class="font-data-numeral text-error font-bold">-12.5M</span><span class="text-[10px] text-outline">276k Nm³</span></div></td><td class="py-5 px-6 text-right"><div class="flex flex-col"><span class="font-data-numeral text-secondary">+2.1M</span><span class="text-[10px] text-outline">6,560kg</span></div></td><td class="py-5 px-6 text-right"><div class="flex flex-col"><span class="font-data-numeral text-secondary">+0.8M</span><span class="text-[10px] text-outline">28t</span></div></td><td class="py-5 px-6 text-right bg-surface-container-low/20"><span class="font-data-numeral font-bold text-error text-[16px] font-bold">-9.6M</span></td></tr><tr class="border-b border-surface-container-highest hover:bg-surface-container-low/30 transition-colors group"><td class="py-5 px-6"><div class="flex flex-col gap-1"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-error"></span><span class="font-bold text-on-surface">탈황 설비 트러블 #044</span></div><span class="text-[11px] text-on-surface-variant ml-4">설비 고장으로 인한 대체 연료 투입</span></div></td><td class="py-5 px-6"><div class="flex flex-col"><span class="font-data-numeral text-[13px] text-on-surface">01.05 ~ 01.08</span><span class="text-[11px] text-outline">지속시간: 72h</span></div></td><td class="py-5 px-6 text-right"><div class="flex flex-col"><span class="font-data-numeral text-error font-bold">-28.0M</span><span class="text-[10px] text-outline">619k Nm³</span></div></td><td class="py-5 px-6 text-right"><div class="flex flex-col"><span class="font-data-numeral text-secondary">+5.4M</span><span class="text-[10px] text-outline">16,875kg</span></div></td><td class="py-5 px-6 text-right"><div class="flex flex-col"><span class="font-data-numeral text-secondary">+2.0M</span><span class="text-[10px] text-outline">70t</span></div></td><td class="py-5 px-6 text-right bg-surface-container-low/20"><span class="font-data-numeral font-bold text-error text-[16px] font-bold">-20.6M</span></td></tr><tr class="border-b border-surface-container-highest hover:bg-surface-container-low/30 transition-colors group"><td class="py-5 px-6"><div class="flex flex-col gap-1"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-error"></span><span class="font-bold text-on-surface">나프탈렌 포집기 온도 상승</span></div><span class="text-[11px] text-on-surface-variant ml-4">냉각수 부족으로 인한 공정 효율 저하</span></div></td><td class="py-5 px-6"><div class="flex flex-col"><span class="font-data-numeral text-[13px] text-on-surface">01.20 ~ 01.21</span><span class="text-[11px] text-outline">지속시간: 24h</span></div></td><td class="py-5 px-6 text-right"><div class="flex flex-col"><span class="font-data-numeral text-error font-bold">-8.2M</span><span class="text-[10px] text-outline">181k Nm³</span></div></td><td class="py-5 px-6 text-right"><div class="flex flex-col"><span class="font-data-numeral text-secondary">+1.5M</span><span class="text-[10px] text-outline">4,680kg</span></div></td><td class="py-5 px-6 text-right"><div class="flex flex-col"><span class="font-data-numeral text-secondary">+0.5M</span><span class="text-[10px] text-outline">17t</span></div></td><td class="py-5 px-6 text-right bg-surface-container-low/20"><span class="font-data-numeral font-bold text-error text-[16px] font-bold">-6.2M</span></td></tr></tbody>
+</table>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 overflow-hidden" id="calculation-basis">
+<button class="w-full p-6 flex items-center justify-between bg-surface focus:outline-none hover:bg-surface-container-low transition-colors" onclick="document.getElementById('calc-content').classList.toggle('hidden'); document.getElementById('calc-icon').classList.toggle('rotate-180')">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant text-[22px]">calculate</span>
+<h2 class="font-headline-sm text-[16px] font-semibold text-on-surface">산출 기준 및 단가 정보</h2>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant transition-transform duration-200" id="calc-icon">expand_more</span>
+</button>
+<div class="hidden border-t border-surface-container-highest p-6 bg-background/50" id="calc-content">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="p-4 rounded-lg bg-surface border border-outline-variant/20">
+<div class="flex items-center gap-2 mb-3 border-b border-surface-container-highest pb-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">local_fire_department</span>
+<h3 class="font-label-caps text-[13px] font-semibold text-on-surface">가스 (Gas)</h3>
+</div>
+<div class="space-y-3 font-data-numeral text-[13px]">
+<div class="flex justify-between">
+<span class="text-on-surface-variant font-body-md text-[12px]">기준 단가</span>
+<span class="text-on-surface font-medium">₩ 45.2 / Nm³</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant font-body-md text-[12px]">계산식</span>
+<span class="text-on-surface font-medium text-right text-[11px] bg-surface-container px-2 py-1 rounded">Δ유량 × 단가 × 24h</span>
+</div>
+<p class="font-body-md text-[11px] text-on-surface-variant mt-2 leading-relaxed">
+              가스 부족분 발생 시 대체 연료(LNG 등) 투입 비용으로 환산되어 손실(-) 처리됨.
+            </p>
+</div>
+</div>
+<div class="p-4 rounded-lg bg-surface border border-outline-variant/20">
+<div class="flex items-center gap-2 mb-3 border-b border-surface-container-highest pb-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">science</span>
+<h3 class="font-label-caps text-[13px] font-semibold text-on-surface">약품 (Chemicals)</h3>
+</div>
+<div class="space-y-3 font-data-numeral text-[13px]">
+<div class="flex justify-between">
+<span class="text-on-surface-variant font-body-md text-[12px]">가성소다 단가</span>
+<span class="text-on-surface font-medium">₩ 320 / kg</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant font-body-md text-[12px]">계산식</span>
+<span class="text-on-surface font-medium text-right text-[11px] bg-surface-container px-2 py-1 rounded">Δ투입량 × 단가</span>
+</div>
+<p class="font-body-md text-[11px] text-on-surface-variant mt-2 leading-relaxed">
+              설비 효율 저하 구간에서 약품 투입량이 기준선(Baseline) 대비 감소한 양을 이익(+)으로 산정.
+            </p>
+</div>
+</div>
+<div class="p-4 rounded-lg bg-surface border border-outline-variant/20">
+<div class="flex items-center gap-2 mb-3 border-b border-surface-container-highest pb-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">air</span>
+<h3 class="font-label-caps text-[13px] font-semibold text-on-surface">스팀 (Steam)</h3>
+</div>
+<div class="space-y-3 font-data-numeral text-[13px]">
+<div class="flex justify-between">
+<span class="text-on-surface-variant font-body-md text-[12px]">LP 스팀 단가</span>
+<span class="text-on-surface font-medium">₩ 28,500 / Ton</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant font-body-md text-[12px]">계산식</span>
+<span class="text-on-surface font-medium text-right text-[11px] bg-surface-container px-2 py-1 rounded">Δ사용량 × 단가</span>
+</div>
+<p class="font-body-md text-[11px] text-on-surface-variant mt-2 leading-relaxed">
+              열교환기 효율 변화 등에 따른 스팀 사용량 감소분을 이익(+)으로 산정.
+            </p>
+</div>
+</div>
+</div>
+<div class="mt-4 text-right">
+<span class="font-label-caps text-[10px] text-outline">최종 업데이트: 2025.01.31 06:00 (회계 부서 제공 기준가)</span>
+</div>
+</div>
+</div>
+</div></main></div>
+</body></html>

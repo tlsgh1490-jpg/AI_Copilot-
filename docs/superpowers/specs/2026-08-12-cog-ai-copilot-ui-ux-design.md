@@ -27,6 +27,9 @@ Goal: let an engineer or manager assess operational state in about 30 seconds an
 
 - Header: application title, as-of timestamp, synthetic-data badge, base date, analysis period, refresh action.
 - Summary cards: normal KPI count, warning KPI count, abnormal KPI count, selected-period cost impact.
+- KPI status cards and the detailed status table must identify the affected KPI, current value, management threshold/range, target comparison, and amount of warning or abnormal deviation; counts alone are insufficient.
+- KPI trend visuals must match the metric type and visibly label their management range, limit, or target baseline. Use a dotted reference line for a threshold where a chart is shown.
+- Cost summaries must show the related actual consumption or production quantity and its target comparison alongside financial impact.
 - Brief & Copilot summary card/link, highest-priority abnormal-event card/link, cost-impact summary/link, and selected-KPI trend link.
 - Cards link to the corresponding detailed view while preserving selected period and event context.
 
@@ -40,6 +43,7 @@ The page is vertically structured, with Brief first and Copilot below it.
 - State the highest-priority issue and recommended first check.
 - Show normal/warning/abnormal KPI counts and selected-period cost impact.
 - Show three issue-relevant KPI rows only, each with status, change, and small sparkline.
+- For an abnormal or warning KPI, include its current value, threshold, and deviation in the row or its adjacent supporting detail.
 - Link to 공정 데이터 분석 for full KPI detail.
 
 ### Copilot
@@ -56,9 +60,10 @@ Goal: diagnose a selected abnormal event and show what to check first.
 
 - Event selector lists EX02, EX03, EX06, and both dated EX07 occurrences.
 - Show event title, affected KPI, expected causes/check candidates, priority, and link to cost impact.
-- Show an explicit precursor -> abnormal -> recovery timeline with the four known phase timestamps.
-- Show selected impact KPI and 2-3 driver-variable trend charts with normal bands, warning/abnormal intervals, and phase markers.
+- Do not show a separate precursor -> abnormal -> recovery timeline.
+- Show selected impact KPI and 2-3 driver-variable trend charts with normal bands and warning/abnormal intervals. Present event dates and phase-related evidence as concise text in the event summary and evidence cards.
 - Show evidence, expected cause/check candidates, and prioritized recommended checks.
+- Evidence and trend charts identify the applicable management threshold, actual value, and deviation, not only the direction of change.
 - Keep the non-confirmed-cause disclaimer visible.
 
 ## 원가 영향
@@ -67,6 +72,7 @@ Goal: turn operational change into financial impact.
 
 - Arbitrary date/time range and event selector.
 - Summary cards for total, gas, chemical, and steam cost impact; clarify negative is loss and positive is improvement.
+- Add actual quantity, target quantity, and target variance for gas, chemical, and steam so users can connect financial impact to operational usage.
 - Trend visualization with day/month/quarter aggregation, plus gas/chemical/steam contribution visualization.
 - Event cost-impact table linking each row to 이상 진단.
 - Expandable formula and unit-rate panel:
@@ -80,7 +86,7 @@ Goal: turn operational change into financial impact.
 Keep the page intentionally simple with only three ordered sections.
 
 1. **분석 지표 선택**: multi-select KPI and process variables; selected items appear as removable chips.
-2. **기간 비교**: independently select arbitrary base and comparison datetime ranges; provide quick-comparison buttons without restricting manual selection.
+2. **기간 비교**: independently select arbitrary base and comparison datetime ranges; provide quick-comparison buttons without restricting manual selection. Use calendar-ready datetime controls; actual date-picker data binding is deferred to the backend phase.
 3. **분석 결과**: table of selected items with base-period value, comparison-period value, absolute difference, percentage/point difference, and direction. A user may expand per-selected-item comparison visualizations and request a deterministic analysis summary.
 
 For unequal periods, show cumulative measures with both total and daily average. Show ratio, quality, and temperature measures with average, minimum, maximum, and variation. Only user-selected items appear in charts; no KPI is fixed by default. Optional charts show normal ranges and event markers.

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={theme:{extend:{"colors":{"tertiary-fixed-dim":"#adc7ff","primary-fixed-dim":"#b7c8de","secondary-fixed-dim":"#76d6d5","primary":"#041627","surface-container-high":"#e9e7e9","surface-container-low":"#f5f3f4","error-container":"#ffdad6","tertiary":"#001435","outline":"#74777d","on-surface":"#1b1c1d","inverse-primary":"#b7c8de","on-secondary-fixed":"#002020","background":"#fbf9fa","surface-dim":"#dbd9db","on-primary":"#ffffff","surface-container-highest":"#e4e2e3","secondary-container":"#90efef","on-tertiary":"#ffffff","on-primary-fixed":"#0b1d2d","on-tertiary-fixed-variant":"#004493","on-error":"#ffffff","on-secondary":"#ffffff","surface-container":"#efedef","surface-container-lowest":"#ffffff","tertiary-fixed":"#d8e2ff","primary-fixed":"#d2e4fb","inverse-on-surface":"#f2f0f2","secondary-fixed":"#93f2f2","on-tertiary-container":"#4a8eff","surface-tint":"#4f6073","on-secondary-fixed-variant":"#004f4f","surface-bright":"#fbf9fa","on-tertiary-fixed":"#001a41","inverse-surface":"#303032","on-secondary-container":"#006e6e","on-surface-variant":"#44474c","primary-container":"#1a2b3c","error":"#ba1a1a","on-primary-fixed-variant":"#38485a","on-background":"#1b1c1d","secondary":"#006a6a","on-error-container":"#93000a","on-primary-container":"#8192a7","tertiary-container":"#00285b","outline-variant":"#c4c6cd","surface":"#fbf9fa","surface-variant":"#e4e2e3"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin_desktop":"2rem","gutter":"1.5rem","sidebar_width":"260px","stack_gap_md":"1rem","stack_gap_sm":"0.5rem","container_max_width":"1440px","stack_gap_lg":"2rem"},"fontFamily":{"headline-sm":["Hanken Grotesk"],"headline-md":["Hanken Grotesk"],"label-caps":["JetBrains Mono"],"body-md":["Hanken Grotesk"],"display-lg":["Hanken Grotesk"],"body-lg":["Hanken Grotesk"],"data-numeral":["JetBrains Mono"]},"fontSize":{"headline-sm":["18px",{"lineHeight":"24px","fontWeight":"600"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],"label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"500"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"display-lg":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"data-numeral":["20px",{"lineHeight":"24px","fontWeight":"600"}]}}}}</script><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/></head><body class="bg-background font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-lowest border-r border-outline-variant z-50 flex flex-col pt-6"><div class="px-6 mb-8 flex flex-col gap-1"><span class="text-primary font-headline-sm text-headline-sm">코크스오븐가스</span><span class="text-secondary font-label-caps text-label-caps tracking-widest">AI 분석 시스템</span></div><nav class="flex-1 px-4 space-y-1" data-active-classes="bg-secondary-container text-on-secondary-container font-bold"><div class="space-y-1"><a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="integrated-status" href="#"><span class="material-symbols-outlined mr-3">home</span><span class="font-body-md text-body-md">통합 현황</span></a><div class="pl-10 space-y-1"><a class="flex items-center px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all text-[13px]" href="#">Brief &amp; Copilot</a><a class="flex items-center px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all text-[13px]" href="#">이상 진단</a><a class="flex items-center px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all text-[13px]" href="#">원가 영향</a></div></div><a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="process-analysis" href="#"><span class="material-symbols-outlined mr-3">analytics</span><span class="font-body-md text-body-md">공정 데이터 분석</span></a><a aria-current="page" class="flex items-center px-4 py-3 rounded-lg transition-all group bg-secondary-container text-on-secondary-container font-bold" data-path="reference-system" href="#"><span class="material-symbols-outlined mr-3">book</span><span class="font-body-md text-body-md">기준 체계</span></a></nav></aside><div class="pl-[260px]"><header class="fixed top-0 left-[260px] right-0 h-16 bg-surface/80 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-margin-desktop"><div class="flex items-center gap-4"></div><div class="flex items-center gap-6"><div class="flex items-center gap-3"><span class="text-on-surface-variant font-label-caps text-label-caps uppercase">데이터 기준</span><span class="text-on-surface font-data-numeral text-data-numeral">2025.12.31 06:00</span></div><div class="px-2 py-1 rounded border border-secondary bg-secondary/10"><span class="font-label-caps text-label-caps text-secondary">[합성 데이터]</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 min-h-screen bg-background p-margin-desktop"><div class="flex flex-col w-full">
+<div class="flex flex-col lg:flex-row gap-stack_gap_lg mb-8 items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center cursor-pointer hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+</div>
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface tracking-tight mb-1">기준 체계</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">코크스오븐가스 AI 분석 시스템 데이터 기준 및 임계값 관리</p>
+</div>
+</div>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-lg shadow-sm hover:shadow-md transition-all font-body-md font-medium">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+      기준 변경
+    </button>
+</div>
+<div class="grid grid-cols-12 gap-gutter">
+<div class="col-span-12 xl:col-span-8 flex flex-col gap-gutter">
+<!-- Section 1: 관리 기준 조회 -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 relative z-10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">tune</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">관리 기준 조회</h2>
+</div>
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<div class="relative w-full sm:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full bg-surface text-on-surface font-body-md text-body-md rounded-lg py-2 pl-10 pr-4 outline-none border border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all" placeholder="항목 검색..." type="text"/>
+</div>
+<button class="p-2 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto relative z-10">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container/50 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+<th class="p-4 rounded-tl-lg font-medium">구분</th>
+<th class="p-4 font-medium">항목</th>
+<th class="p-4 font-medium text-center">정상 범위</th>
+<th class="p-4 font-medium text-center">주의</th>
+<th class="p-4 rounded-tr-lg font-medium text-center">이상</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<tr class="border-b border-surface-container hover:bg-surface/50 transition-colors">
+<td class="p-4"><span class="px-2 py-1 bg-surface-container-high rounded text-on-surface-variant font-label-caps text-[11px]">압력</span></td>
+<td class="p-4 font-medium">가스관 1차 압력</td>
+<td class="p-4 text-center"><span class="font-data-numeral">1,200 ~ 1,400</span> mmH2O</td>
+<td class="p-4 text-center text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span> <span class="font-data-numeral">±5%</span> 초과</span>
+</td>
+<td class="p-4 text-center text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error"></span> <span class="font-data-numeral">±10%</span> 초과</span>
+</td>
+</tr>
+<tr class="border-b border-surface-container hover:bg-surface/50 transition-colors">
+<td class="p-4"><span class="px-2 py-1 bg-surface-container-high rounded text-on-surface-variant font-label-caps text-[11px]">온도</span></td>
+<td class="p-4 font-medium">냉각탑 출구 온도</td>
+<td class="p-4 text-center"><span class="font-data-numeral">35.0 ~ 45.0</span> °C</td>
+<td class="p-4 text-center text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span> <span class="font-data-numeral">&gt; 47.0</span> °C</span>
+</td>
+<td class="p-4 text-center text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error"></span> <span class="font-data-numeral">&gt; 50.0</span> °C</span>
+</td>
+</tr>
+<tr class="border-b border-surface-container hover:bg-surface/50 transition-colors">
+<td class="p-4"><span class="px-2 py-1 bg-surface-container-high rounded text-on-surface-variant font-label-caps text-[11px]">유량</span></td>
+<td class="p-4 font-medium">순환수 유량</td>
+<td class="p-4 text-center"><span class="font-data-numeral">2,500 ~ 2,800</span> m³/h</td>
+<td class="p-4 text-center text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span> <span class="font-data-numeral">&lt; 2,400</span> m³/h</span>
+</td>
+<td class="p-4 text-center text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error"></span> <span class="font-data-numeral">&lt; 2,200</span> m³/h</span>
+</td>
+</tr>
+<tr class="border-b border-surface-container hover:bg-surface/50 transition-colors">
+<td class="p-4"><span class="px-2 py-1 bg-surface-container-high rounded text-on-surface-variant font-label-caps text-[11px]">성분</span></td>
+<td class="p-4 font-medium">H2S 농도</td>
+<td class="p-4 text-center"><span class="font-data-numeral">0.0 ~ 5.0</span> ppm</td>
+<td class="p-4 text-center text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span> <span class="font-data-numeral">&gt; 7.0</span> ppm</span>
+</td>
+<td class="p-4 text-center text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error"></span> <span class="font-data-numeral">&gt; 10.0</span> ppm</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-4 flex justify-between items-center text-on-surface-variant font-body-md text-[13px]">
+<span>총 42개 항목 중 1-4</span>
+<div class="flex gap-1">
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center opacity-50 cursor-not-allowed"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+<button class="w-8 h-8 rounded bg-primary-container text-on-primary-container flex items-center justify-center font-medium">1</button>
+<button class="w-8 h-8 rounded border border-outline-variant hover:bg-surface-container flex items-center justify-center transition-colors">2</button>
+<button class="w-8 h-8 rounded border border-outline-variant hover:bg-surface-container flex items-center justify-center transition-colors">3</button>
+<button class="w-8 h-8 rounded border border-outline-variant hover:bg-surface-container flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+</div>
+</div>
+</section>
+<!-- Section 3: 기준 변경 이력 -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-6 relative overflow-hidden">
+<div class="flex items-center gap-3 mb-6 relative z-10">
+<span class="material-symbols-outlined text-outline">history</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">기준 변경 이력</h2>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container/30 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+<th class="p-3 rounded-tl-lg font-medium">버전</th>
+<th class="p-3 font-medium">적용 시작일</th>
+<th class="p-3 font-medium">항목</th>
+<th class="p-3 font-medium">변경 내용</th>
+<th class="p-3 font-medium">변경 사유</th>
+<th class="p-3 rounded-tr-lg font-medium">작성자</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface text-[13px]">
+<tr class="border-b border-surface-container hover:bg-surface/50 transition-colors">
+<td class="p-3"><span class="font-data-numeral font-bold text-primary">v1.2</span></td>
+<td class="p-3 font-data-numeral text-on-surface-variant">2025.10.15</td>
+<td class="p-3 font-medium">냉각탑 출구 온도</td>
+<td class="p-3"><span class="line-through text-outline-variant mr-1">45.0</span> → <span class="font-medium">47.0</span> (주의)</td>
+<td class="p-3 text-on-surface-variant">동절기 외기 온도 반영 조정</td>
+<td class="p-3"><span class="px-2 py-1 bg-surface-container rounded text-on-surface-variant font-label-caps text-[10px]">sys_admin_01</span></td>
+</tr>
+<tr class="border-b border-surface-container hover:bg-surface/50 transition-colors">
+<td class="p-3"><span class="font-data-numeral font-bold text-on-surface-variant">v1.1</span></td>
+<td class="p-3 font-data-numeral text-on-surface-variant">2025.06.01</td>
+<td class="p-3 font-medium">H2S 농도</td>
+<td class="p-3"><span class="line-through text-outline-variant mr-1">8.0</span> → <span class="font-medium">10.0</span> (이상)</td>
+<td class="p-3 text-on-surface-variant">환경 규제 기준 완화에 따른 임계값 상향</td>
+<td class="p-3"><span class="px-2 py-1 bg-surface-container rounded text-on-surface-variant font-label-caps text-[10px]">sys_admin_02</span></td>
+</tr>
+<tr class="hover:bg-surface/50 transition-colors">
+<td class="p-3"><span class="font-data-numeral font-bold text-on-surface-variant">v1.0</span></td>
+<td class="p-3 font-data-numeral text-on-surface-variant">2025.01.01</td>
+<td class="p-3 font-medium">시스템 초기화</td>
+<td class="p-3">초기 기준값 설정</td>
+<td class="p-3 text-on-surface-variant">시스템 오픈 초기화</td>
+<td class="p-3"><span class="px-2 py-1 bg-surface-container rounded text-on-surface-variant font-label-caps text-[10px]">system_batch</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<div class="col-span-12 xl:col-span-4 flex flex-col gap-gutter">
+<!-- Section 2: 판정 규칙 -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-6 relative overflow-hidden h-full">
+<div class="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-transparent pointer-events-none"></div>
+<div class="flex items-center gap-3 mb-6 relative z-10">
+<span class="material-symbols-outlined text-primary">rule</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">이상 판정 규칙</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 relative z-10">
+          단순 임계값 초과가 아닌, 지속 시간 및 복합 요인을 고려하여 최종 이상 상태를 판정합니다.
+        </p>
+<!-- Visual Flow -->
+<div class="flex flex-col gap-2 relative z-10">
+<div class="bg-surface rounded-lg border border-surface-container p-4 flex flex-col gap-2 relative">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">단계 1</span>
+<div class="flex items-center gap-1 bg-[#10b981]/10 text-[#10b981] px-2 py-1 rounded font-label-caps text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span> 정상
+              </div>
+</div>
+<p class="font-body-md text-[14px] text-on-surface">모든 지표가 정상 범위 내 유지</p>
+</div>
+<div class="w-full flex justify-center text-outline-variant py-1">
+<span class="material-symbols-outlined text-[20px]">arrow_downward</span>
+</div>
+<div class="bg-surface rounded-lg border border-surface-container p-4 flex flex-col gap-2 relative">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">단계 2</span>
+<div class="flex items-center gap-1 bg-[#f59e0b]/10 text-[#f59e0b] px-2 py-1 rounded font-label-caps text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#f59e0b]"></span> 주의
+              </div>
+</div>
+<p class="font-body-md text-[14px] text-on-surface">주의 기준 1회 이상 도달 시 경보 발령</p>
+<div class="mt-2 bg-surface-container rounded p-2 text-on-surface-variant font-label-caps text-[10px] uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">timer</span> 모니터링 시작 (0h)
+            </div>
+</div>
+<div class="w-full flex justify-center text-outline-variant py-1">
+<span class="material-symbols-outlined text-[20px]">arrow_downward</span>
+</div>
+<div class="bg-error/5 rounded-lg border border-error/20 p-4 flex flex-col gap-2 relative">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">단계 3</span>
+<div class="flex items-center gap-1 bg-error/10 text-error px-2 py-1 rounded font-label-caps text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> 이상
+              </div>
+</div>
+<p class="font-body-md text-[14px] text-on-surface">주의 상태가 <strong class="font-medium text-error">3시간 이상 지속</strong>되거나, 즉시 이상 기준 도달 시</p>
+<div class="mt-2 bg-error-container text-on-error-container rounded p-2 font-label-caps text-[10px] uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">notifications_active</span> 시스템 잠금 및 경보
+            </div>
+</div>
+</div>
+</section>
+<!-- Section 4: Principles -->
+<section class="bg-surface-container-highest rounded-xl p-6 relative overflow-hidden flex-1">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-on-surface-variant">gavel</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">버전 관리 원칙</h3>
+</div>
+<ul class="font-body-md text-[14px] text-on-surface-variant space-y-3">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5">check_circle</span>
+<span>변경된 기준은 설정된 <strong>적용 시작일</strong>부터 새로운 데이터에만 적용됩니다.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5">check_circle</span>
+<span>과거 데이터의 판정 이력은 소급 적용되지 않으며, 당시 버전을 기준으로 보존됩니다. (감사 목적)</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5">check_circle</span>
+<span>모든 기준 변경은 관리자 권한이 필요하며, 변경 사유 입력이 필수입니다.</span>
+</li>
+</ul>
+<div class="mt-6 pt-4 border-t border-outline-variant/30 flex justify-between items-center">
+<span class="font-label-caps text-[11px] text-on-surface-variant uppercase">Registry Status</span>
+<span class="font-label-caps text-[11px] text-primary flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary"></span> SECURE &amp; SYNCED</span>
+</div>
+</section>
+</div>
+</div>
+</div></main></div></body></html>

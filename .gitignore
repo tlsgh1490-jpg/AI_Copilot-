@@ -1,0 +1,6 @@
+# Regenerable dependencies and temporary inspection artifacts
+**/node_modules/
+__pycache__/
+*.inspect.ndjson
+tmp/
+test-results/
