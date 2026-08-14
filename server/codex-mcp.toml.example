@@ -1,0 +1,3 @@
+[mcp_servers.cog_copilot]
+command = "node"
+args = ["C:\\Users\\POSCOFUTUREM\\Documents\\AI 교육 과제\\server\\mcp-server.js"]
