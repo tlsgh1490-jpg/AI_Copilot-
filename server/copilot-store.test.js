@@ -36,6 +36,9 @@ test('keeps a generated narrative until data or standards change', () => {
     store.upsertRelationship({ targetMetricId: 'qualityContent', candidateMetricId: 'steamM01', direction: 'inverse', weight: 0.82 });
     assert.equal(store.relationships('qualityContent')[0].weight, 0.82);
 
+    store.deleteStandard('qualityContent', '2027-01-01');
+    assert.equal(store.standards().filter((item) => item.metricId === 'qualityContent').length, 1);
+
     store.deleteObservation('2026-01-02');
     assert.equal(store.observations().length, 1);
   } finally {

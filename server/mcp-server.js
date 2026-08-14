@@ -10,7 +10,7 @@ const tools = [
   { name: 'upsert_observation', description: 'Add or replace one day of operating data. This changes the data version and refreshes subsequent analysis.', inputSchema: { type: 'object', required: ['period', 'metrics'], properties: { period: { type: 'string' }, metrics: { type: 'object' } } } },
   { name: 'delete_observation', description: 'Delete one operating-data day by period.', inputSchema: { type: 'object', required: ['period'], properties: { period: { type: 'string' } } } },
   { name: 'upsert_management_standard', description: 'Add or replace one management standard. This changes the standards version and refreshes subsequent analysis.', inputSchema: { type: 'object', required: ['metricId'], properties: { metricId: { type: 'string' }, normalMin: { type: 'number' }, normalMax: { type: 'number' }, warningMin: { type: 'number' }, warningMax: { type: 'number' }, target: { type: 'number' } } } },
-  { name: 'delete_management_standard', description: 'Delete one management standard by metric id.', inputSchema: { type: 'object', required: ['metricId'], properties: { metricId: { type: 'string' } } } },
+  { name: 'delete_management_standard', description: 'Delete a management standard. Pass effectiveFrom to delete one dated version; omit it to delete all versions of the metric.', inputSchema: { type: 'object', required: ['metricId'], properties: { metricId: { type: 'string' }, effectiveFrom: { type: 'string' } } } },
 ];
 
 function createMcpHandler(runtime) {
@@ -29,7 +29,7 @@ function createMcpHandler(runtime) {
       case 'upsert_observation': runtime.store.upsertObservation(args); result = { versions: runtime.store.versions() }; break;
       case 'delete_observation': result = { deleted: runtime.store.deleteObservation(args.period), versions: runtime.store.versions() }; break;
       case 'upsert_management_standard': runtime.store.upsertStandard(args); result = { versions: runtime.store.versions() }; break;
-      case 'delete_management_standard': result = { deleted: runtime.store.deleteStandard(args.metricId), versions: runtime.store.versions() }; break;
+      case 'delete_management_standard': result = { deleted: runtime.store.deleteStandard(args.metricId, args.effectiveFrom), versions: runtime.store.versions() }; break;
       default: throw new Error('Unknown tool');
     }
     return { content: [{ type: 'text', text: JSON.stringify(result) }] };

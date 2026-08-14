@@ -81,7 +81,7 @@ function createApplication(options = {}) {
       }
       if (request.method === 'DELETE' && url.pathname.startsWith('/api/standards/')) {
         const metricId = decodeURIComponent(url.pathname.slice('/api/standards/'.length));
-        response.writeHead(store.deleteStandard(metricId) ? 200 : 404, { 'Content-Type': 'application/json; charset=utf-8' });
+        response.writeHead(store.deleteStandard(metricId, url.searchParams.get('effectiveFrom')) ? 200 : 404, { 'Content-Type': 'application/json; charset=utf-8' });
         response.end(JSON.stringify({ versions: store.versions() }));
         return;
       }

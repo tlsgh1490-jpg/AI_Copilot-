@@ -104,8 +104,10 @@ class CopilotStore {
     this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'standards_version'").run();
   }
 
-  deleteStandard(metricId) {
-    const result = this.database.prepare('DELETE FROM standard_versions WHERE metric_id = ?').run(metricId);
+  deleteStandard(metricId, effectiveFrom) {
+    const result = effectiveFrom
+      ? this.database.prepare('DELETE FROM standard_versions WHERE metric_id = ? AND effective_from = ?').run(metricId, effectiveFrom)
+      : this.database.prepare('DELETE FROM standard_versions WHERE metric_id = ?').run(metricId);
     if (result.changes) this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'standards_version'").run();
     return result.changes > 0;
   }
