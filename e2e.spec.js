@@ -20,6 +20,70 @@ test('selected overview date range refreshes profit summary and breakdown', asyn
   await expect(page.locator('#overview .profit-breakdown span').first()).toContainText('백만원');
 });
 
+test('overview starts on the latest available source date', async ({ page }) => {
+  await page.goto(appUrl);
+  const inputs = page.locator('#overview .overview-period-filter input');
+  await expect(inputs.nth(0)).toHaveValue('2025-12-31T07:00');
+  await expect(inputs.nth(1)).toHaveValue('2025-12-31T07:00');
+});
+
+test('overview quick ranges refresh KPI trends and profit data', async ({ page }) => {
+  await page.goto(appUrl);
+  const filter = page.locator('#overview .overview-period-filter');
+  const profit = page.locator('#overview .period-profit-summary > div > b');
+  const spark = page.locator('#overview .spark').first();
+  await filter.locator('button[data-overview-range="1"]').click();
+  const oneDayProfit = await profit.innerText();
+  const oneDayPeriods = await spark.getAttribute('data-trend-periods');
+  await expect(filter.locator('input').nth(0)).toHaveValue('2025-12-30T07:00');
+  await filter.locator('button[data-overview-range="30"]').click();
+  await expect(profit).not.toHaveText(oneDayProfit);
+  await expect(spark).not.toHaveAttribute('data-trend-periods', oneDayPeriods || '');
+  await expect(page.locator('#overview .kpi-status-board tbody tr')).not.toHaveCount(0);
+});
+
+test('KPI status values change when the selected range changes within one month', async ({ page }) => {
+  await page.goto(appUrl);
+  const filter = page.locator('#overview .overview-period-filter');
+  const purified = page.locator('#overview .kpi-status-board tbody tr').filter({ hasText: '정제량' }).locator('td').nth(2).locator('b');
+  await filter.locator('input').nth(0).fill('2025-12-01T07:00');
+  await filter.locator('input').nth(1).fill('2025-12-12T07:00');
+  await filter.locator('button.primary').click();
+  const first = await purified.innerText();
+  await filter.locator('input').nth(0).fill('2025-12-05T07:00');
+  await filter.locator('input').nth(1).fill('2025-12-12T07:00');
+  await filter.locator('button.primary').click();
+  await expect(purified).not.toHaveText(first);
+});
+
+test('quality content card displays the selected-period average with sufficient precision', async ({ page }) => {
+  await page.goto(appUrl);
+  const filter = page.locator('#overview .overview-period-filter');
+  const card = page.locator('#overview .spark-grid .spark').first().locator(':scope > b');
+  await filter.locator('input').nth(0).fill('2025-12-01T07:00');
+  await filter.locator('input').nth(1).fill('2025-12-12T07:00');
+  await filter.locator('button.primary').click();
+  const first = await card.innerText();
+  await filter.locator('input').nth(0).fill('2025-12-05T07:00');
+  await filter.locator('input').nth(1).fill('2025-12-12T07:00');
+  await filter.locator('button.primary').click();
+  const second = await card.innerText();
+  expect(first).not.toBe(second);
+  expect(first).toMatch(/0\.7\d{2}/);
+});
+
+test('overview period changes are carried into lower screens', async ({ page }) => {
+  await page.goto(appUrl);
+  const overviewFilter = page.locator('#overview .overview-period-filter');
+  await overviewFilter.locator('button[data-overview-range="7"]').click();
+  await page.locator('.sidebar .subnav [data-view="cost"]').click();
+  await expect(page.locator('#cost .impact-period-filter input').nth(0)).toHaveValue('2025-12-24T07:00');
+  await expect(page.locator('#cost .impact-period-filter input').nth(1)).toHaveValue('2025-12-31T07:00');
+  await page.locator('.sidebar .subnav [data-view="diagnosis"]').click();
+  await expect(page.locator('#diagnosis .impact-period-filter input').nth(0)).toHaveValue('2025-12-24T07:00');
+  await expect(page.locator('#diagnosis .impact-period-filter input').nth(1)).toHaveValue('2025-12-31T07:00');
+});
+
 test('diagnosis identifies the in-range event only when its KPI is actually abnormal', async ({ page }) => {
   await page.goto(appUrl);
   await page.locator('.sidebar .subnav [data-view="diagnosis"]').click();
@@ -53,8 +117,26 @@ test('cost usage cards keep gas, material, and steam usage separate', async ({ p
   }
   await expect(cards.nth(0)).toContainText('Nm3');
   await expect(cards.nth(1)).toContainText('kg');
+  await expect(cards.nth(1)).toContainText('약품 전체');
   await expect(cards.nth(2)).toContainText('t');
   expect(await cards.nth(0).locator('strong').innerText()).not.toBe(await cards.nth(1).locator('strong').innerText());
+});
+
+test('chemical cost detail supports total, A, and B filters for the selected period', async ({ page }) => {
+  await page.goto(appUrl);
+  await page.locator('.sidebar .subnav [data-view="cost"]').click();
+  const tabs = page.locator('#cost .profit-item-tabs [data-profit-item]');
+  await expect(tabs).toContainText(['약품 전체', '약품 A', '약품 B']);
+  await tabs.filter({ hasText: '약품 A' }).click();
+  await expect(page.locator('#cost .profit-item-charts .profit-item-chart')).toHaveCount(1);
+  await expect(page.locator('#cost .profit-item-charts .profit-item-chart h4')).toHaveText('약품 A');
+  const before = await page.locator('#cost .period-summary b').first().innerText();
+  const filter = page.locator('#cost .impact-period-filter');
+  await filter.locator('input').nth(0).fill('2025-09-01T07:00');
+  await filter.locator('input').nth(1).fill('2025-09-30T07:00');
+  await filter.locator('button.primary').click();
+  await expect(page.locator('#cost .profit-item-charts .profit-item-chart h4')).toHaveText('약품 A');
+  await expect(page.locator('#cost .period-summary b').first()).not.toHaveText(before);
 });
 
 test('overview and brief KPI detail toggles reveal additional shared KPI rows', async ({ page }) => {
@@ -121,6 +203,32 @@ test('process overview exposes all KPI and process-variable selectors', async ({
   await expect(page.locator('#processOverview .metric-checks input')).toHaveCount(23);
   await expect(page.locator('#processOverview .metric-checks')).toContainText('총괄열전달계수');
   await expect(page.locator('#processOverview .metric-checks')).toContainText('배기 흡입속도');
+  const count = page.locator('#processOverview .visible-count');
+  await expect(count).toHaveText('23개');
+  await page.locator('#processOverview .metric-selector summary').click();
+  await page.locator('#processOverview .metric-checks input').nth(0).uncheck();
+  await expect(count).toHaveText('22개');
+});
+
+test('overview spark cards match the selected period KPI summaries', async ({ page }) => {
+  await page.goto(appUrl);
+  const filter = page.locator('#overview .overview-period-filter');
+  await filter.locator('input').nth(0).fill('2025-12-20T07:00');
+  await filter.locator('input').nth(1).fill('2025-12-26T07:00');
+  await filter.locator('button.primary').click();
+  const cards = page.locator('#overview .spark-grid .spark');
+  const values = [];
+  for (let i = 0; i < await cards.count(); i += 1) values.push(await cards.nth(i).locator(':scope > b').innerText());
+  const expected = await page.evaluate(() => Object.fromEntries(window.CogDataService.getKpiSummaries({ start: '2025-12-20T07:00', end: '2025-12-26T07:00' }).map((item) => [item.id, { value: item.value, decimals: item.decimals }])));
+  const cardIds = ['qualityContent', 'steamUsage', 'purifiedVolume', 'gasOutletTemp'];
+  expect(values.map((text, index) => text.replace(/,/g, '').split(' ')[0])).toEqual(cardIds.map((id) => expected[id].value.toFixed(expected[id].decimals)));
+  const firstPeriod = [...values];
+  await filter.locator('input').nth(0).fill('2025-12-27T07:00');
+  await filter.locator('input').nth(1).fill('2025-12-31T07:00');
+  await filter.locator('button.primary').click();
+  const secondPeriod = [];
+  for (let i = 0; i < await cards.count(); i += 1) secondPeriod.push(await cards.nth(i).locator(':scope > b').innerText());
+  expect(secondPeriod).not.toEqual(firstPeriod);
 });
 
 test('process analysis adds any selected process variable and uses it in results', async ({ page }) => {

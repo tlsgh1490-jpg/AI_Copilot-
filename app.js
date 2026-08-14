@@ -212,11 +212,10 @@ if (processResult) {
   const processDateInputs = [...document.querySelectorAll('#process input[type="datetime-local"]')];
   const renderStandardResult = () => {
     const mode = standardResult.querySelector('[data-standard-mode]')?.value || 'auto';
-    const selectedDate = processDateInputs[0]?.value.slice(0, 10) || '2025-06-20';
-    const relevant = [...new Set(managementStandardData.map((row) => row.metric))].map((metric) => {
-      const candidates = managementStandardData.filter((row) => row.metric === metric && (mode === 'auto' ? row.effectiveFrom <= selectedDate : row.version === mode));
-      return candidates.sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom))[0];
-    });
+    const start = processDateInputs[0]?.value || '';
+    const end = processDateInputs[1]?.value || start;
+    const summaries = window.CogDataService.getKpiSummaries({ start, end });
+    const relevant = summaries.filter((item) => ['qualityContent', 'steamUsage', 'gasOutletTemp'].includes(item.id));
     const rows = relevant.map((row) => '<tr><td><b>' + row.metric + '</b></td><td>' + row.actual + '</td><td><b>' + row.version + '</b><small>\uc801\uc6a9 \uc2dc\uc791 ' + row.effectiveFrom + '</small></td><td>' + row.normal + '</td><td>' + row.warning + '</td><td>' + row.abnormal + '</td><td><span class=\"status ' + row.status + '\">' + (row.status === 'danger' ? '\uc774\uc0c1' : '\uc815\uc0c1') + '</span></td><td class=\"' + (row.status === 'danger' ? 'red-text' : 'positive') + '\">' + row.variance + '</td></tr>').join('');
     const usageRows = standardUsageAnalysisData.map((row) => '<tr><td><b>' + row.item + '</b></td><td>' + row.target + '</td><td>' + row.actual + '</td><td class=\"' + (row.status === 'danger' ? 'red-text' : 'positive') + '\">' + row.change + '</td><td><b class=\"' + (row.status === 'danger' ? 'red-text' : 'positive') + '\">' + row.profitImpact + '</b><small>' + row.note + '</small></td></tr>').join('');
     standardResult.innerHTML = '<div class=\"card-title\"><div><h2>\uad00\ub9ac\uae30\uc900 \ub300\ube44 \ubd84\uc11d</h2><p>\uc120\ud0dd \uae30\uac04 \uc2e4\uc801\uc744 \uc2dc\uc810\ubcc4 \uc801\uc6a9 \uae30\uc900\uacfc \ub300\uc870\ud569\ub2c8\ub2e4.</p></div><label class=\"standard-mode\">\uae30\uc900 \uc801\uc6a9 <select data-standard-mode><option value=\"auto\">\uc801\uc6a9 \uc2dc\uc810 \uae30\uc900 \uc790\ub3d9</option><option value=\"v1.0\">v1.0 \uc9c1\uc811 \uc120\ud0dd</option><option value=\"v1.1\">v1.1 \uc9c1\uc811 \uc120\ud0dd</option></select></label></div><div class=\"standard-application\"><b>\uae30\uc900 \uc801\uc6a9 \uc548\ub0b4</b><span>\uc120\ud0dd \uae30\uac04\uc5d0 \uae30\uc900 \ubcc0\uacbd\uc77c\uc774 \ud3ec\ud568\ub418\uba74 \uc801\uc6a9 \uc2dc\uc791\uc77c \uae30\uc900\uc73c\ub85c \ubc84\uc804\ubcc4 \ubd84\ub9ac \ud310\uc815\ud569\ub2c8\ub2e4.</span></div><div class=\"standard-table-scroll\"><table class=\"simple-table compact\"><thead><tr><th>\uc9c0\ud45c</th><th>\uc120\ud0dd \uae30\uac04 \uc2e4\uc801</th><th>\uc801\uc6a9 \uae30\uc900</th><th>\uc815\uc0c1 \ubc94\uc704</th><th>\uc8fc\uc758</th><th>\uc774\uc0c1</th><th>\ud310\uc815</th><th>\uae30\uc900 \ub300\ube44</th></tr></thead><tbody>' + rows + '</tbody></table></div><h3 class=\"usage-analysis-title\">\uc0ac\uc6a9\ub7c9\u00b7\uc190\uc775 \uae30\uc900 \ub300\ube44</h3><div class=\"standard-table-scroll\"><table class=\"simple-table compact\"><thead><tr><th>\uad00\ub9ac \ud56d\ubaa9</th><th>\uae30\uc900 \uc0ac\uc6a9\ub7c9</th><th>\uc120\ud0dd \uae30\uac04 \uc2e4\uc81c</th><th>\uc0ac\uc6a9\ub7c9 \uc99d\uac10</th><th>\uae30\uc900 \ub300\ube44 \uc190\uc775 \uc601\ud5a5</th></tr></thead><tbody>' + usageRows + '</tbody></table></div>';
@@ -231,6 +230,7 @@ if (processResult) {
   const analysisTabs = document.createElement('div');
   analysisTabs.className = 'analysis-mode-tabs';
   analysisTabs.innerHTML = '<button class=\"selected\" data-analysis-mode=\"period\">\uae30\uac04 \ube44\uad50 \ubd84\uc11d</button><button data-analysis-mode=\"standard\">\uad00\ub9ac\uae30\uc900 \ub300\ube44 \ubd84\uc11d</button>';
+  analysisTabs.querySelector('[data-analysis-mode="standard"]')?.remove();
   resultTitle.appendChild(analysisTabs);
   standardResult.hidden = true;
   analysisTabs.querySelectorAll('button').forEach((button) => button.addEventListener('click', () => {
@@ -344,7 +344,8 @@ renameCostImpactText();
 addImpactPeriodFilter('#diagnosis', '\uc774\uc0c1 \uc9c4\ub2e8');
 addImpactPeriodFilter('#cost', '\uc190\uc775 \uc601\ud5a5');
 
-let profitImpactData = window.CogDataService.getCostRecords({ start: '2025-01-01', end: '2025-12-31' }).map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
+let profitImpactFilters = { start: '2025-01-01', end: '2025-12-31' };
+let profitImpactData = window.CogDataService.getCostRecords(profitImpactFilters).map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
 
 const waterfall = document.querySelector('#cost .waterfall');
 if (waterfall) {
@@ -369,11 +370,17 @@ if (monthlyNet) {
   profitDetail.className = 'card profit-impact-detail';
   monthlyNet.closest('.card').replaceWith(profitDetail);
   const costItems = [...new Set(profitImpactData.map((row) => row.costItem))];
+  const detailItems = [...costItems, ...['약품 A', '약품 B'].filter((item) => !costItems.includes(item))];
   const money = (value) => (value >= 0 ? '+' : '') + value.toFixed(1) + '\ubc31\ub9cc\uc6d0';
   const rowClass = (value) => value >= 0 ? 'positive' : 'negative';
-  const renderProfitItemCharts = () => {
-    const charts = costItems.map((costItem) => {
-      const rows = profitImpactData.filter((row) => row.costItem === costItem);
+  let selectedProfitChartItem = null;
+  const renderProfitItemCharts = (focusedItem = selectedProfitChartItem) => {
+    const chartItems = focusedItem ? [focusedItem] : costItems;
+    const charts = chartItems.map((costItem) => {
+      const rows = (costItem === '약품 A' || costItem === '약품 B'
+        ? window.CogDataService.getCostRecords({ ...profitImpactFilters, costItem })
+        : profitImpactData.filter((row) => row.costItem === costItem))
+        .map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
       const maxValue = Math.max(1.4, ...rows.map((row) => Math.abs(row.actualProfitImpact)));
       const actualTotal = rows.reduce((sum, row) => sum + row.actualProfitImpact, 0);
       const baselineTotal = rows.reduce((sum, row) => sum + row.baselineProfitImpact, 0);
@@ -394,8 +401,11 @@ if (monthlyNet) {
   };
   const renderDetail = (selectedItem) => {
     if (window.CogUiState) window.CogUiState.selectedProfitItem = selectedItem;
-    const selectedRows = profitImpactData.filter((row) => row.costItem === selectedItem);
-    const displayedMonths = [...new Set(profitImpactData.map((row) => row.month))].sort((a, b) => a - b);
+    const selectedRows = (selectedItem === '약품 A' || selectedItem === '약품 B'
+      ? window.CogDataService.getCostRecords({ ...profitImpactFilters, costItem: selectedItem })
+      : profitImpactData.filter((row) => row.costItem === selectedItem))
+      .map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
+    const displayedMonths = [...new Set(selectedRows.map((row) => row.month))].sort((a, b) => a - b);
     const maxValue = Math.max(1.4, ...selectedRows.flatMap((row) => [Math.abs(row.actualProfitImpact), Math.abs(row.baselineProfitImpact)]));
     const chartHeight = 190;
     const zeroY = 100;
@@ -421,11 +431,17 @@ if (monthlyNet) {
     const periodSummary = '<div class=\"period-summary\"><span>\uc120\ud0dd \uae30\uac04 \ub204\uacc4 <b class=\"' + rowClass(cumulativeActual) + '\">' + money(cumulativeActual) + '</b></span><span>\uae30\uc900 \ub204\uacc4 <b>' + money(cumulativeBaseline) + '</b></span><span>\uae30\uc900 \ub300\ube44 <b class=\"' + rowClass(cumulativeVariance) + '\">' + money(cumulativeVariance) + ' ' + (cumulativeVariance >= 0 ? '\uc808\uac10' : '\uc545\ud654') + ' <em>(' + (cumulativeVariance >= 0 ? '+' : '-') + varianceRate + '%)</em></b></span></div>';
     profitDetail.innerHTML = '<div class=\"card-title\"><div><h2>\uc6d4\ubcc4 \uc190\uc775\uc601\ud5a5</h2><p>\ud45c\uc5d0\uc11c \uc804\uccb4 \ud604\ud669\uc744 \ud655\uc778\ud558\uace0, \ud56d\ubaa9\uc744 \uc120\ud0dd\ud574 \uae30\uc900 \ub300\ube44 \uc0c1\uc138 \ucd94\uc774\ub97c \ubd05\ub2c8\ub2e4.</p></div><button class=\"pill\">CSV \ub2e4\uc6b4\ub85c\ub4dc \u2193</button></div><div class=\"profit-table-scroll\"><table class=\"simple-table compact profit-impact-table\"><thead><tr><th>\uc190\uc775 \ud56d\ubaa9</th>' + Array.from({ length: 12 }, (_, index) => '<th>' + (index + 1) + '\uc6d4</th>').join('') + '</tr></thead><tbody>' + tableRows + '</tbody></table></div><div class=\"profit-item-tabs\">' + costItems.map((costItem) => '<button class=\"' + (costItem === selectedItem ? 'selected' : '') + '\" data-profit-item=\"' + costItem + '\">' + costItem + '</button>').join('') + '</div><section class=\"profit-detail-chart\"><div class=\"card-title\"><div><h3>' + selectedItem + ' \uc6d4\ubcc4 \uc0c1\uc138</h3><p>\ub9c9\ub300: \uc2e4\uc81c \uc190\uc775\uc601\ud5a5 · \uc120: \uc6d4\ubcc4 \uae30\uc900 \uc190\uc775\uc601\ud5a5</p></div><span class=\"criterion-key\">\ub9c9\ub300 \ud638\ubc84 \uc2dc \uc2e4\uc81c\u00b7\uae30\uc900\u00b7\ucc28\uc774 \ud655\uc778</span></div><div class=\"profit-chart-wrap\"><div class=\"profit-y-axis\"><span>+' + maxValue.toFixed(1) + '\uc5b5</span><span>0</span><span>-' + maxValue.toFixed(1) + '\uc5b5</span></div><svg viewBox=\"0 0 710 ' + chartHeight + '\" role=\"img\" aria-label=\"' + selectedItem + ' \uc6d4\ubcc4 \uc2e4\uc81c \ubc0f \uae30\uc900 \uc190\uc775\uc601\ud5a5\"><line class=\"profit-grid\" x1=\"18\" y1=\"28\" x2=\"700\" y2=\"28\"/><line class=\"profit-zero\" x1=\"18\" y1=\"100\" x2=\"700\" y2=\"100\"/><line class=\"profit-grid\" x1=\"18\" y1=\"172\" x2=\"700\" y2=\"172\"/>' + bars + '<polyline class=\"profit-baseline\" points=\"' + linePoints + '\"/>' + lineDots + '</svg></div></section>';
     profitDetail.querySelector('.profit-impact-table thead tr').innerHTML = '<th>\uc190\uc775 \ud56d\ubaa9</th>' + displayedMonths.map((month) => '<th>' + month + '\uc6d4</th>').join('');
+    profitDetail.querySelectorAll('.profit-y-axis span').forEach((axis) => { axis.textContent = axis.textContent.replace('억', '백만원'); });
+    const detailTabs = profitDetail.querySelector('.profit-item-tabs');
+    detailItems.filter((item) => !costItems.includes(item)).forEach((item) => detailTabs.insertAdjacentHTML('beforeend', '<button class="' + (item === selectedItem ? 'selected' : '') + '" data-profit-item="' + item + '">' + item + '</button>'));
     profitDetail.querySelector('.profit-item-tabs').insertAdjacentHTML('afterend', periodSummary);
     profitDetail.querySelector('.profit-detail-chart').remove();
     profitDetail.querySelectorAll('[data-profit-item]').forEach((element) => element.addEventListener('click', () => renderDetail(element.dataset.profitItem)));
+    selectedProfitChartItem = selectedItem === '약품 A' || selectedItem === '약품 B' ? selectedItem : null;
+    const visibleCharts = document.querySelector('#cost .profit-item-charts');
+    if (visibleCharts) visibleCharts.replaceWith(document.createRange().createContextualFragment(renderProfitItemCharts(selectedProfitChartItem)));
   };
-  renderDetail(costItems[0]);
+  renderDetail(detailItems.includes('약품 전체') ? '약품 전체' : costItems[0]);
   window.__renderProfitImpactDetail = renderDetail;
   const topImpactCard = document.querySelector('#cost .impact-composition-card');
   const topImpactChart = topImpactCard?.querySelector('.impact-composition-chart');
@@ -444,12 +460,12 @@ if (monthlyNet) {
     tableWithComposition.appendChild(compositionCard);
   }
   window.refreshProfitImpactView = (selectedItem = dataDrivenState?.selectedProfitItem || costItems[0]) => {
-    const available = [...new Set(profitImpactData.map((row) => row.costItem))];
+    const available = detailItems;
     const item = available.includes(selectedItem) ? selectedItem : available[0];
     dataDrivenState.selectedProfitItem = item;
     renderDetail(item);
     const renderedCharts = topImpactCard?.querySelector('.profit-item-charts');
-    if (renderedCharts) renderedCharts.replaceWith(document.createRange().createContextualFragment(renderProfitItemCharts()));
+    if (renderedCharts) renderedCharts.replaceWith(document.createRange().createContextualFragment(renderProfitItemCharts(selectedProfitChartItem)));
   };
 }
 
@@ -467,8 +483,11 @@ formatCostUnitText();
 
 // Shared UI state and render bridge: every approved screen reads the same API-ready mock model.
 const dataDrivenState = {
-  start: '2025-12-01', end: '2025-12-31', plant: '화성공장', process: 'COG 정제공정', product: 'COG', selectedProfitItem: '자재비 절감', selectedEventId: 'EX07',
+  start: '', end: '', plant: '화성공장', process: 'COG 정제공정', product: 'COG', selectedProfitItem: '약품 전체', selectedEventId: 'EX07',
 };
+const latestDataPeriod = window.CogMockData.dailyObservations.map((row) => row.period).sort().at(-1) || window.CogMockData.metadata.referenceAt.slice(0, 10);
+dataDrivenState.start = latestDataPeriod;
+dataDrivenState.end = latestDataPeriod;
 const processAnalysisState = { metricIds: ['qualityContent', 'steamUsage', 'gasOutletTemp'] };
 const formatMetricValue = (summary) => !summary?.hasData || summary.value === null ? '-' : `${summary.value.toLocaleString(undefined, { maximumFractionDigits: summary.decimals })}${summary.unit ? ` ${summary.unit}` : ''}`;
 const statusClass = (status) => status === 'abnormal' ? 'danger' : status === 'warning' ? 'warning' : 'normal';
@@ -516,7 +535,15 @@ function renderOverviewSparks(summaries) {
   const cards = document.querySelectorAll('#overview .spark-grid .spark');
   cards.forEach((card, index) => {
     const summary = summaries.find((item) => item.id === metricIds[index]);
-    if (!summary) return;
+    if (!summary || !summary.hasData) {
+      card.querySelector(':scope > b')?.replaceChildren('—');
+      card.querySelector(':scope > small')?.replaceChildren('조회 데이터 없음');
+      card.querySelector('.spark-meta span')?.replaceChildren('선택 기간 데이터 없음');
+      card.querySelector('.spark-meta b')?.replaceChildren('—');
+      card.querySelector('svg path')?.setAttribute('d', 'M0 23 L120 23');
+      card.dataset.trendPeriods = '';
+      return;
+    }
     const value = card.querySelector(':scope > b');
     const target = card.querySelector(':scope > small');
     const meta = card.querySelector('.spark-meta');
@@ -557,6 +584,32 @@ function renderBriefAndOverviewSummary(summaries, profit) {
     if (small) small.textContent = `기준 ${profit.baselineProfitImpact.toFixed(1)}백만원 대비 ${profit.variance >= 0 ? '+' : ''}${profit.variance.toFixed(1)}백만원`;
   });
 }
+function renderOverviewNarrative(summaries, filters) {
+  const focus = summaries.find((item) => item.status === 'abnormal') || summaries.find((item) => item.status === 'warning');
+  const event = window.CogDataService.getEvents(filters)[0];
+  const insight = document.querySelector('#overview .insight-list');
+  if (insight) insight.innerHTML = focus
+    ? `<div><b>${focus.label} ${statusLabel(focus.status)} 징후 확인</b><p>선택 기간의 ${focus.label}가 관리기준을 벗어났습니다. 관련 공정 지표를 우선 확인합니다.</p></div><div><b>최우선 조치: 관련 공정 상태 점검</b><p>${event ? `${event.id} ${event.name} 구간의 연관 지표를 확인합니다.` : '다음 조업일까지 해당 지표의 추이를 모니터링합니다.'}</p></div>`
+    : '<div><b>선택 기간 정상 운영</b><p>선택 기간에 관리기준을 벗어난 KPI가 없습니다.</p></div><div><b>권장 조치: 현재 상태 유지</b><p>다음 조회에서도 같은 기준으로 추이를 확인합니다.</p></div>';
+  const diagnosis = document.querySelector('#overview .diagnosis-card');
+  if (diagnosis) {
+    diagnosis.querySelector('.event-banner').innerHTML = focus ? `<span>${event ? `${event.id} · ${event.name}` : `${focus.label} 이탈`}</span><b>${event?.priority || statusLabel(focus.status)}</b>` : '<span>선택 기간 · 이상 없음</span><b>정상</b>';
+    diagnosis.querySelector('.cause-row b').textContent = focus ? '관련 공정 지표 점검' : '추이 모니터링';
+  }
+}
+function renderBriefNarrative(summaries, filters) {
+  const focus = summaries.find((item) => item.status === 'abnormal') || summaries.find((item) => item.status === 'warning');
+  const event = window.CogDataService.getEvents(filters)[0];
+  const alert = document.querySelector('#brief .brief-full .alert');
+  if (alert) alert.innerHTML = focus ? `<b>[${statusLabel(focus.status)}]</b> ${focus.label}가 관리기준을 벗어났습니다. ${event ? `${event.id} ${event.name} 구간의 관련 지표를 확인합니다.` : '관련 공정 지표를 우선 확인합니다.'}` : '<b>[정상]</b> 선택 기간에 관리기준을 벗어난 KPI가 없습니다.';
+  const topic = document.querySelector('#brief .topic-chips button');
+  if (topic) topic.textContent = event ? `${event.id} · ${event.name}` : focus ? `${focus.label} 이탈` : '선택 기간 정상';
+  document.querySelectorAll('#brief .metric-strip').forEach((strip) => {
+    const counts = { normal: summaries.filter((item) => item.status === 'normal').length, warning: summaries.filter((item) => item.status === 'warning').length, abnormal: summaries.filter((item) => item.status === 'abnormal').length };
+    const values = [counts.normal, counts.warning, counts.abnormal];
+    strip.querySelectorAll('span b').forEach((node, index) => { if (values[index] !== undefined) node.textContent = values[index]; });
+  });
+}
 document.querySelector('#overview .kpi-detail-toggle')?.addEventListener('click', () => {
   kpiDetailState.overview = !kpiDetailState.overview;
   renderKpiTables(kpiDetailState.summaries);
@@ -578,6 +631,37 @@ function renderProfitBreakdown(filters) {
     const note = target.querySelector('small');
     if (note) note.textContent = `기준 대비 ${item.variance >= 0 ? '+' : ''}${item.variance.toFixed(1)}백만원`;
   });
+  document.querySelectorAll('#overview .cost-list > div').forEach((target, index) => {
+    const item = items[index];
+    if (!item) return;
+    target.querySelector('b').textContent = item.costItem;
+    target.querySelector('span').textContent = `실제 ${item.actualUsage.toLocaleString()} · 목표 ${item.targetUsage.toLocaleString()} · ${item.variance >= 0 ? '+' : ''}${item.variance.toFixed(1)}백만원`;
+    target.querySelector('strong').textContent = `${item.actualProfitImpact >= 0 ? '+' : ''}${item.actualProfitImpact.toFixed(1)}백만원`;
+  });
+}
+function renderCostEventTable(filters) {
+  const table = [...document.querySelectorAll('#cost table.simple-table')].find((item) => item.querySelector('tbody td b')?.textContent.includes('EX'));
+  const body = table?.querySelector('tbody');
+  if (!body) return;
+  const events = window.CogDataService.getEvents(filters);
+  const rows = events.map((event) => {
+    const records = window.CogDataService.getCostRecords({ start: event.startAt, end: event.endAt });
+    const grouped = window.CogDataService.groupCostByItem({ start: event.startAt, end: event.endAt });
+    const amount = (keywords) => grouped.find((item) => keywords.some((keyword) => item.costItem.includes(keyword)))?.actualProfitImpact || 0;
+    const total = records.reduce((sum, row) => sum + row.actualProfitImpact, 0);
+    return `<tr><td><b>${event.id} · ${event.name}</b><small>영향 지표: ${(event.impactedMetrics || []).join(', ')}</small></td><td>${event.startAt.slice(5, 10).replace('-', '.')} ~ ${event.endAt.slice(5, 10).replace('-', '.')}</td><td>${amount(['가스', 'gas']).toFixed(1)}백만원</td><td>${amount(['약품', 'chemical']).toFixed(1)}백만원</td><td>${amount(['스팀', 'steam']).toFixed(1)}백만원</td><td><b>${total.toFixed(1)}백만원</b></td></tr>`;
+  });
+  body.innerHTML = rows.join('') || '<tr><td colspan="6">선택 기간에 해당하는 이벤트가 없습니다.</td></tr>';
+}
+function renderCostComposition(filters) {
+  const items = window.CogDataService.groupCostByItem(filters);
+  const donut = document.querySelector('#cost .donut');
+  const list = document.querySelector('#cost .key-list');
+  const total = items.reduce((sum, item) => sum + Math.abs(item.actualProfitImpact), 0);
+  const first = items[0];
+  if (donut) donut.querySelector('b').textContent = `${first && total ? Math.round(Math.abs(first.actualProfitImpact) / total * 100) : 0}%`;
+  if (donut) donut.querySelector('span').textContent = first?.costItem || '선택 기간 데이터 없음';
+  if (list) list.innerHTML = items.map((item) => `<li><i></i>${item.costItem} <b>${item.actualProfitImpact >= 0 ? '+' : ''}${item.actualProfitImpact.toFixed(1)}백만원</b></li>`).join('') || '<li>선택 기간 데이터 없음</li>';
 }
 function removeMeaninglessProfitBaselines() {
   document.querySelectorAll('#cost .profit-baseline, #cost .profit-baseline-label').forEach((element) => element.remove());
@@ -587,8 +671,15 @@ function removeMeaninglessProfitBaselines() {
 function syncSharedPeriodPresentation() {
   const { start, end } = dataDrivenState;
   document.querySelectorAll('#overview .overview-period-filter input').forEach((input, index) => { input.value = index === 0 ? start : end; });
+  document.querySelectorAll('#cost .impact-period-filter input, #diagnosis .impact-period-filter input, #process input[type="datetime-local"], #processOverview input[type="datetime-local"]').forEach((input, index) => { input.value = index % 2 === 0 ? start : end; });
   const briefPeriod = document.querySelector('#brief .page-head p');
   if (briefPeriod) briefPeriod.textContent = `기준일 ${window.CogMockData.metadata.referenceAt.slice(0, 10).replaceAll('-', '.')} · 조회 기간 ${start.replaceAll('-', '.')} ~ ${end.replaceAll('-', '.')}`;
+}
+
+function shiftPeriodStart(endValue, days) {
+  const endDate = new Date(`${String(endValue).slice(0, 10)}T00:00:00Z`);
+  endDate.setUTCDate(endDate.getUTCDate() - days);
+  return `${endDate.toISOString().slice(0, 10)}T07:00`;
 }
 
 function refreshDataDrivenViews(nextState = {}, options = {}) {
@@ -599,13 +690,16 @@ function refreshDataDrivenViews(nextState = {}, options = {}) {
   renderKpiTables(summaries);
   renderOverviewSparks(summaries);
   renderBriefAndOverviewSummary(summaries, profit);
+  renderOverviewNarrative(summaries, filters);
+  renderBriefNarrative(summaries, filters);
   renderProfitBreakdown(filters);
   syncSharedPeriodPresentation();
+  window.refreshProcessOverview?.();
   const activeView = document.querySelector('.view.active')?.id;
   if (activeView === 'standards' && typeof renderStandardsFromData === 'function') renderStandardsFromData(document.querySelector('#standards .search')?.value || '');
   if (activeView === 'brief' && typeof renderCopilotTopic === 'function') renderCopilotTopic('qualityContent');
-  if (activeView === 'process' && typeof renderProcessStandardAnalysis === 'function') renderProcessStandardAnalysis();
-  if (activeView === 'cost' && typeof renderCostFromData === 'function') { renderCostFromData(filters); removeMeaninglessProfitBaselines(); }
+  if (activeView === 'process') { if (typeof runProcessComparison === 'function') runProcessComparison(); if (typeof renderProcessStandardAnalysis === 'function') renderProcessStandardAnalysis(); }
+  if (activeView === 'cost' && typeof renderCostFromData === 'function') { renderCostFromData(filters); renderCostEventTable(filters); renderCostComposition(filters); removeMeaninglessProfitBaselines(); }
   if (activeView === 'diagnosis' && typeof renderDiagnosisFromEvent === 'function') renderDiagnosisFromEvent(dataDrivenState.selectedEventId, filters);
   return { summaries, profit };
 }
@@ -614,6 +708,7 @@ document.querySelectorAll('.impact-period-filter').forEach((filter) => {
   const applyPeriod = () => {
     const period = { start: inputs[0].value, end: inputs[1].value };
     if (filter.closest('#cost')) {
+      profitImpactFilters = period;
       profitImpactData = window.CogDataService.getCostRecords(period).map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
       window.refreshProfitImpactView?.(dataDrivenState.selectedProfitItem);
     }
@@ -622,8 +717,8 @@ document.querySelectorAll('.impact-period-filter').forEach((filter) => {
   };
   filter.querySelector('.primary')?.addEventListener('click', applyPeriod);
   filter.querySelectorAll('.impact-quick button').forEach((button, index) => button.addEventListener('click', () => {
-    const end = '2025-12-31'; const days = [1, 7, 30][index]; const start = new Date(`${end}T00:00:00`); start.setDate(start.getDate() - days);
-    inputs[0].value = `${start.toISOString().slice(0, 10)}T07:00`; inputs[1].value = `${end}T07:00`;
+    const end = dataDrivenState.end?.slice(0, 10) || window.CogMockData.metadata.referenceAt.slice(0, 10); const days = [1, 7, 30][index];
+    inputs[0].value = shiftPeriodStart(end, days); inputs[1].value = `${end}T07:00`;
     applyPeriod();
   }));
 });
@@ -647,7 +742,9 @@ if (processOverviewBridge) {
   const renderProcessOverview = () => {
     const filters = { start: inputs[0].value, end: inputs[1].value };
     const summaries = window.CogDataService.getKpiSummaries(filters).filter((item) => metricDefs.some((definition) => definition.id === item.id));
-    const selectedIds = [...checks.querySelectorAll('input:checked')].map((input) => input.value);
+    const selectedInputs = [...checks.querySelectorAll('input:checked')];
+    const selectedIds = selectedInputs.map((input) => input.value);
+    processOverviewBridge.querySelector('.visible-count').textContent = `${selectedInputs.length}개`;
     grid.innerHTML = summaries.filter((item) => !selectedIds.length || selectedIds.includes(item.id)).map((item) => `<article class="process-kpi-card ${statusClass(item.status)}"><div><b>${item.label}</b><strong>${formatMetricValue(item)}</strong></div>${trendSvg(item)}<small>${standardText(item)}</small><span>${statusLabel(item.status)}</span></article>`).join('');
     const observations = window.CogDataService.getObservations(filters);
     const visible = summaries.filter((item) => !selectedIds.length || selectedIds.includes(item.id));
@@ -661,7 +758,10 @@ if (processOverviewBridge) {
     renderProcessOverview();
   });
   processOverviewBridge.querySelector('[data-process-query]')?.addEventListener('click', () => { renderProcessOverview(); refreshDataDrivenViews({ start: inputs[0].value, end: inputs[1].value }); });
+  inputs[0].value = `${dataDrivenState.start}T07:00`;
+  inputs[1].value = `${dataDrivenState.end}T07:00`;
   renderProcessOverview();
+  window.refreshProcessOverview = renderProcessOverview;
 }
 
 function openProcessOverviewForState(event) {
@@ -693,6 +793,8 @@ if (overviewHead) {
   overviewPeriodFilter.innerHTML = '<div class="impact-period-label"><b>통합현황 조회 기간</b><span>선택 기간의 KPI·손익영향을 함께 조회합니다.</span></div><div class="impact-period-inputs"><label>시작<input type="datetime-local" value="2025-12-01T07:00"></label><label>종료<input type="datetime-local" value="2025-12-31T07:00"></label></div><div class="impact-quick"><button type="button" data-overview-range="1">전일</button><button type="button" data-overview-range="7">전 7일</button><button type="button" data-overview-range="30">전 30일</button></div><button class="primary" type="button">조회</button><small class="impact-period-selected"></small>';
   overviewHead.insertAdjacentElement('afterend', overviewPeriodFilter);
   const inputs = [...overviewPeriodFilter.querySelectorAll('input')];
+  inputs[0].value = `${dataDrivenState.start.slice(0, 10)}T07:00`;
+  inputs[1].value = `${dataDrivenState.end.slice(0, 10)}T07:00`;
   const applyOverviewRange = () => {
     const state = { start: inputs[0].value, end: inputs[1].value };
     overviewPeriodFilter.querySelector('.impact-period-selected').textContent = `적용 기간: ${state.start.replaceAll('-', '.')} ~ ${state.end.replaceAll('-', '.')}`;
@@ -700,8 +802,8 @@ if (overviewHead) {
   };
   overviewPeriodFilter.querySelector('.primary').addEventListener('click', applyOverviewRange);
   overviewPeriodFilter.querySelectorAll('[data-overview-range]').forEach((button) => button.addEventListener('click', () => {
-    const end = new Date('2025-12-31T07:00:00'); const start = new Date(end); start.setDate(start.getDate() - Number(button.dataset.overviewRange));
-    inputs[0].value = `${start.toISOString().slice(0, 10)}T07:00`; inputs[1].value = '2025-12-31T07:00'; applyOverviewRange();
+    const end = dataDrivenState.end?.slice(0, 10) || window.CogMockData.metadata.referenceAt.slice(0, 10);
+    inputs[0].value = shiftPeriodStart(end, Number(button.dataset.overviewRange)); inputs[1].value = `${end}T07:00`; applyOverviewRange();
   }));
   applyOverviewRange();
 }
@@ -959,6 +1061,9 @@ function renderCostFromData(filters = { start: dataDrivenState.start, end: dataD
   const cost = document.querySelector('#cost');
   if (!cost) return;
   const records = window.CogDataService.getCostRecords(filters);
+  profitImpactFilters = filters;
+  profitImpactData = records.map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
+  window.refreshProfitImpactView?.(dataDrivenState.selectedProfitItem);
   const grouped = window.CogDataService.groupCostByItem(filters);
   const total = window.CogDataService.getCostSummary(filters);
   const cards = cost.querySelectorAll('.metric-grid .metric');
