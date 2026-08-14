@@ -1287,4 +1287,8 @@ async function syncOperatingDataFromServer() {
   }
 }
 syncOperatingDataFromServer();
+setInterval(() => {
+  syncManagementStandardsFromServer();
+  syncOperatingDataFromServer();
+}, 30000);
 document.querySelectorAll('.synthetic').forEach((element) => element.remove());
