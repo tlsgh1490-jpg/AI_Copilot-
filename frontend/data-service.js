@@ -1,6 +1,14 @@
 (function () {
   const data = window.CogMockData;
   const inRange = (value, start, end) => (!start || value >= start) && (!end || value <= end);
+  const operationalDate = (value, granularity = 'day') => {
+    const raw = String(value || '');
+    const date = raw.slice(0, 10);
+    if (granularity !== 'hour' || !raw.includes('T') || Number(raw.slice(11, 13)) >= 7) return date;
+    const shifted = new Date(`${date}T00:00:00Z`);
+    shifted.setUTCDate(shifted.getUTCDate() - 1);
+    return shifted.toISOString().slice(0, 10);
+  };
   const byDimensions = (row, filters) => ['plant', 'process', 'product'].every((key) => {
     const sourceValue = String(row[key] || '');
     // The workbook-derived export carries placeholder text for descriptive dimensions.
@@ -13,7 +21,7 @@
     return latestBy(data.standards, (standard) => standard.metricId === metricId && standard.effectiveFrom <= at);
   }
   function getObservations(filters = {}) {
-    const dailyFilters = { ...filters, start: filters.start?.slice(0, 10), end: filters.end?.slice(0, 10) };
+    const dailyFilters = { ...filters, start: operationalDate(filters.start, filters.granularity), end: operationalDate(filters.end, filters.granularity) };
     return data.dailyObservations.filter((row) => byDimensions(row, dailyFilters) && inRange(row.period, dailyFilters.start, dailyFilters.end));
   }
   function evaluateMetric(metricId, value, at) {
@@ -52,8 +60,10 @@
   }
   function getPeriodIssues(filters = {}) {
     const observations = getObservations(filters);
+    const issueStart = operationalDate(filters.start, filters.granularity);
+    const issueEnd = operationalDate(filters.end, filters.granularity);
     if (data.dailyStatuses?.length) {
-      const statuses = data.dailyStatuses.filter((item) => inRange(item.period, filters.start?.slice(0, 10), filters.end?.slice(0, 10)) && item.status !== 'normal');
+      const statuses = data.dailyStatuses.filter((item) => inRange(item.period, issueStart, issueEnd) && item.status !== 'normal');
       const issueIds = [...new Set(statuses.map((item) => item.metricId))];
       return issueIds.map((metricId) => {
         const definition = data.metricDefinitions.find((item) => item.id === metricId);
@@ -64,7 +74,7 @@
         return { ...definition, value: row.metrics[metricId], period: row.period, series: getMetricSeries(metricId, filters), ...evaluation, status: status.status, targetVariance: +(row.metrics[metricId] - evaluation.standard.target).toFixed(3), hasData: true };
       }).filter(Boolean);
     }
-    const sourceStatuses = (data.dailyStatuses || []).filter((item) => inRange(item.period, filters.start?.slice(0, 10), filters.end?.slice(0, 10)) && !String(item.status).includes('정상'));
+    const sourceStatuses = (data.dailyStatuses || []).filter((item) => inRange(item.period, issueStart, issueEnd) && !String(item.status).includes('정상'));
     const issueIds = new Set(sourceStatuses.map((item) => item.metricId));
     if (!sourceStatuses.length) {
       observations.forEach((row) => data.metricDefinitions.forEach((definition) => {
@@ -87,11 +97,18 @@
         if (value.length === 10) return `${value}T${boundary === 'end' ? '23:59:59' : '00:00:00'}`;
         return value.length === 16 ? `${value}:00` : value;
       };
-      const start = normalizeTimestamp(filters.start, 'start');
-      const end = normalizeTimestamp(filters.end, 'end');
+      const dayBoundary = (value, days, time) => {
+        const date = new Date(`${String(value).slice(0, 10)}T00:00:00Z`);
+        date.setUTCDate(date.getUTCDate() + days);
+        return `${date.toISOString().slice(0, 10)}T${time}`;
+      };
+      const dayMode = filters.granularity === 'day' || (filters.granularity === 'month' && !String(filters.start || '').includes('T') && !String(filters.end || '').includes('T'));
+      const start = dayMode ? dayBoundary(filters.start, 0, '07:00:00') : normalizeTimestamp(filters.start, 'start');
+      const end = dayMode ? dayBoundary(filters.end, 1, '06:59:59') : normalizeTimestamp(filters.end, 'end');
       if (data.monthlyCostImpacts?.length) {
         const values = (row) => Object.values(row);
         const operationMonth = (timestamp) => { const at = new Date(`${timestamp.slice(0, 19)}Z`); at.setUTCHours(at.getUTCHours() - 7); return at.toISOString().slice(0, 7); };
+        const operationPeriod = (timestamp) => filters.granularity === 'day' ? operationalDate(timestamp, 'hour') : operationMonth(timestamp);
         const counts = data.costObservations.reduce((result, row) => { const month = operationMonth(row.timestamp); result[month] = (result[month] || 0) + 1; return result; }, {});
         const sourceRows = (timestamp) => data.monthlyCostImpacts.filter((row) => values(row)[0] === operationMonth(timestamp));
         const perHourTarget = (source, timestamp) => Number(values(source)[4]) / counts[operationMonth(timestamp)];
@@ -111,8 +128,8 @@
             include(chemicalTotal) ? { costItem: chemicalTotal, usageLabel: chemicalTotal, usageUnit: 'kg', actualUsage: row.chemicalAUsage + row.chemicalBUsage, targetUsage: aTarget + bTarget, impact: ((aTarget - row.chemicalAUsage) * rate(chemicalA) + (bTarget - row.chemicalBUsage) * rate(chemicalB)) / 1000000 } : null,
             includeChemical(chemicalAItem) ? { costItem: chemicalAItem, usageLabel: chemicalAItem, usageUnit: 'kg', actualUsage: row.chemicalAUsage, targetUsage: aTarget, impact: (aTarget - row.chemicalAUsage) * rate(chemicalA) / 1000000 } : null,
             includeChemical(chemicalBItem) ? { costItem: chemicalBItem, usageLabel: chemicalBItem, usageUnit: 'kg', actualUsage: row.chemicalBUsage, targetUsage: bTarget, impact: (bTarget - row.chemicalBUsage) * rate(chemicalB) / 1000000 } : null,
-            include(values(steam)[1]) ? { costItem: values(steam)[1], usageLabel: values(steam)[1], usageUnit: 't', actualUsage: row.steamUsage, targetUsage: steamTarget, impact: (steamTarget - row.steamUsage) * rate(steam) / 1000000 } : null,
-          ].filter(Boolean).map((item) => ({ ...item, timestamp: row.timestamp, period: operationMonth(row.timestamp) }));
+            include(values(steam)[1]) ? { costItem: values(steam)[1], usageLabel: values(steam)[1], usageUnit: 't/h', actualUsage: row.steamUsage, targetUsage: steamTarget, impact: (steamTarget - row.steamUsage) * rate(steam) / 1000000 } : null,
+          ].filter(Boolean).map((item) => ({ ...item, timestamp: row.timestamp, period: operationPeriod(row.timestamp) }));
         }).filter((row) => !filters.costItem || row.costItem === filters.costItem);
         const groups = new Map();
         rows.forEach((row) => { const key = `${row.period}|${row.costItem}`; const previous = groups.get(key) || { period: row.period, costItem: row.costItem, usageLabel: row.usageLabel, usageUnit: row.usageUnit, actualProfitImpact: 0, baselineProfitImpact: 0, actualUsage: 0, targetUsage: 0, plannedUsage: 0, unit: 'M KRW' }; previous.actualProfitImpact += row.impact; previous.actualUsage += row.actualUsage; previous.targetUsage += row.targetUsage; previous.plannedUsage += row.targetUsage; groups.set(key, previous); });
@@ -136,7 +153,7 @@
           return [
             { costItem: data.costLabels.gas, usageLabel: data.costLabels.gas, usageUnit: 'Nm3', actualUsage: row.gasQuantity, targetUsage: gasTarget, impact: (row.gasQuantity - gasTarget) * sourceRate(gas) / 1000000 },
             { costItem: data.costLabels.chemical, usageLabel: data.costLabels.chemical, usageUnit: 'kg', actualUsage: row.chemicalAUsage + row.chemicalBUsage, targetUsage: aTarget + bTarget, impact: ((aTarget - row.chemicalAUsage) * sourceRate(chemicalA) + (bTarget - row.chemicalBUsage) * sourceRate(chemicalB)) / 1000000 },
-            { costItem: data.costLabels.steam, usageLabel: data.costLabels.steam, usageUnit: 't', actualUsage: row.steamUsage, targetUsage: steamTarget, impact: (steamTarget - row.steamUsage) * sourceRate(steam) / 1000000 },
+            { costItem: data.costLabels.steam, usageLabel: data.costLabels.steam, usageUnit: 't/h', actualUsage: row.steamUsage, targetUsage: steamTarget, impact: (steamTarget - row.steamUsage) * sourceRate(steam) / 1000000 },
           ].map((item) => ({ ...item, timestamp: row.timestamp, period: operationMonth(row.timestamp) }));
         }).filter((row) => !filters.costItem || row.costItem === filters.costItem);
         const groups = new Map();
@@ -176,7 +193,7 @@
             return [
               { costItem: '가스량 영향', usageLabel: '가스량', usageUnit: 'Nm³', actualUsage: row.gasQuantity, targetUsage: gasTarget, impact: (row.gasQuantity - gasTarget) * sourceRate(row.timestamp, '가스량') / 1000000 },
               { costItem: '약품비 절감', usageLabel: '약품 A+B 사용량', usageUnit: 'kg', actualUsage: row.chemicalAUsage + row.chemicalBUsage, targetUsage: chemicalATarget + chemicalBTarget, impact: ((chemicalATarget - row.chemicalAUsage) * sourceRate(row.timestamp, '약품 A') + (chemicalBTarget - row.chemicalBUsage) * sourceRate(row.timestamp, '약품 B')) / 1000000 },
-              { costItem: '스팀 절감', usageLabel: '스팀 사용량', usageUnit: 't', actualUsage: row.steamUsage, targetUsage: steamTarget, impact: (steamTarget - row.steamUsage) * sourceRate(row.timestamp, '스팀') / 1000000 },
+              { costItem: '스팀 절감', usageLabel: '스팀 사용량', usageUnit: 't/h', actualUsage: row.steamUsage, targetUsage: steamTarget, impact: (steamTarget - row.steamUsage) * sourceRate(row.timestamp, '스팀') / 1000000 },
             ].map((item) => ({ ...item, timestamp: row.timestamp, period: operationMonth(row.timestamp) }));
           })
           .filter((row) => !filters.costItem || row.costItem === filters.costItem);
@@ -205,7 +222,7 @@
           return [
             { costItem: '생산량 증대 영향', usageLabel: '가스 사용량', usageUnit: 'Nm³', actualUsage: row.gasQuantity, targetUsage: targets.gas, impact: (row.gasQuantity - targets.gas) * 90 / 1000000 },
             { costItem: '자재비 절감', usageLabel: '약품 A+B 사용량', usageUnit: 'kg', actualUsage: row.chemicalAUsage + row.chemicalBUsage, targetUsage: targets.chemicalA + targets.chemicalB, impact: ((targets.chemicalA - row.chemicalAUsage) * 154000 + (targets.chemicalB - row.chemicalBUsage) * 128000) / 1000000 },
-            { costItem: '유틸리티 절감', usageLabel: '스팀 사용량', usageUnit: 't', actualUsage: row.steamUsage, targetUsage: targets.steam, impact: (targets.steam - row.steamUsage) * steamPrice / 1000000 },
+            { costItem: '유틸리티 절감', usageLabel: '스팀 사용량', usageUnit: 't/h', actualUsage: row.steamUsage, targetUsage: targets.steam, impact: (targets.steam - row.steamUsage) * steamPrice / 1000000 },
           ].map((item) => ({ ...item, timestamp: row.timestamp, period: row.timestamp.slice(0, 7) }));
         })
         .filter((row) => !filters.costItem || row.costItem === filters.costItem);

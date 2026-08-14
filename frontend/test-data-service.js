@@ -13,6 +13,13 @@ const { CogMockData, CogDataService } = context.window;
 assert.strictEqual(CogMockData.dailyObservations.length, 731, 'KPI queries must use the workbook-derived daily aggregation');
 assert.ok(CogMockData.dailyObservations.every((row) => row.metrics.steamM01 !== undefined && row.metrics.steamM04 !== undefined), 'Individual steam M01~M04 values must come from the source data');
 assert.ok(!CogMockData.metricDefinitions.some((item) => item.id === 'steamM01M04'), 'The steam average must not be offered as a selectable metric');
+for (const metricId of ['aUnit', 'bUnit', 'cUnit']) {
+  assert.strictEqual(CogMockData.metricDefinitions.find((item) => item.id === metricId).unit, 'kg/t', `${metricId} must use kg/t`);
+}
+assert.strictEqual(CogMockData.metricDefinitions.find((item) => item.id === 'steamUsage').unit, 't/h', 'Total steam KPI must use t/h display units');
+for (const metricId of ['steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06']) {
+  assert.strictEqual(CogMockData.metricDefinitions.find((item) => item.id === metricId).unit, 't/h', `${metricId} must use hourly flow units`);
+}
 assert.strictEqual(CogMockData.dailyObservations.find((row) => row.period === '2024-01-01').metrics.purifiedVolume, 1058.482744, 'A selected date must read its workbook daily KPI value');
 const before = CogDataService.getKpiSummaries({ start: '2025-12-01', end: '2025-12-31' }).find((item) => item.id === 'qualityContent');
 CogMockData.dailyObservations.at(-1).metrics.qualityContent = 0.72;
@@ -34,6 +41,9 @@ assert.ok(weekCost.actualProfitImpact > twoDayCost.actualProfitImpact, 'Daily co
 const decemberFirst = CogDataService.getCostSummary({ start: '2025-12-01', end: '2025-12-01' });
 const decemberSecond = CogDataService.getCostSummary({ start: '2025-12-02', end: '2025-12-02' });
 assert.notStrictEqual(decemberFirst.actualProfitImpact, decemberSecond.actualProfitImpact, 'Adjacent daily cost queries must not reuse a monthly total');
+const dailyCostRows = CogDataService.getCostRecords({ start: '2025-12-01T07:00', end: '2025-12-03T07:00', granularity: 'day' });
+const monthlyCostRows = CogDataService.getCostRecords({ start: '2025-12-01T07:00', end: '2025-12-03T07:00', granularity: 'month' });
+assert.ok(dailyCostRows.length > monthlyCostRows.length, 'Daily cost granularity must retain separate date buckets');
 assert.strictEqual(CogMockData.costObservations.length, 17544, 'Cost calculations must use the supplied hourly operational observations');
 if (false) {
 const workbookGasMonth = context.window.CogWorkbookSource.monthlyCostImpacts.find((row) => row['월'] === '2025-12' && row['원가항목'] === '가스량');
@@ -48,6 +58,7 @@ const costItems = CogDataService.groupCostByItem({ start: '2025-12-01T07:00:00',
 assert.strictEqual(costItems.length, 3, 'The selected period must retain gas, material, and utility items');
 assert.notStrictEqual(costItems[0].actualUsage, costItems[1].actualUsage, 'Gas and material usage must not show the same total');
 assert.notStrictEqual(costItems[1].actualUsage, costItems[2].actualUsage, 'Material and utility usage must not show the same total');
+assert.strictEqual(costItems.find((item) => item.usageLabel.includes('스팀'))?.usageUnit, 't/h', 'Steam cost usage must use t/h display units');
 
 const outOfRangeSummaries = CogDataService.getKpiSummaries({ start: '2026-01-02T07:00', end: '2026-01-02T07:00' });
 assert.ok(outOfRangeSummaries.every((item) => item.hasData === false), 'A period without source rows must not fall back to the final workbook day');

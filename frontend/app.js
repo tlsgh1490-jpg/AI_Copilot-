@@ -4,6 +4,8 @@ const sidebarNavButtons = [...document.querySelectorAll('.sidebar [data-view]')]
 const crumb = document.querySelector('#crumb');
 const labels = { overview: '통합 현황', brief: 'Brief & Copilot', diagnosis: '이상 진단', cost: '원가 영향', process: '공정 데이터 분석', standards: '기준 체계' };
 
+document.querySelector('.topbar .top-meta')?.remove();
+
 function showView(id) {
   views.forEach((view) => view.classList.toggle('active', view.id === id));
   sidebarNavButtons.forEach((button) => {
@@ -18,6 +20,39 @@ function showView(id) {
 }
 
 navButtons.forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
+
+const shiftCalendarDate = (value, days) => {
+  const date = new Date(`${String(value).slice(0, 10)}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+};
+const operationalDateFromInput = (value, isEnd = false) => {
+  const date = String(value || '').slice(0, 10);
+  if (!isEnd || !String(value).includes('T')) return date;
+  const hour = Number(String(value).slice(11, 13));
+  return hour < 7 ? shiftCalendarDate(date, -1) : date;
+};
+const readPeriodRange = (container, inputs = [...container.querySelectorAll('[data-period-input]')]) => {
+  const timeMode = Boolean(container.querySelector('[data-time-mode]')?.checked);
+  if (timeMode) return { start: inputs[0]?.value || '', end: inputs[1]?.value || '', granularity: 'hour' };
+  return { start: operationalDateFromInput(inputs[0]?.value), end: operationalDateFromInput(inputs[1]?.value, true), granularity: 'day' };
+};
+const installPeriodMode = (container, inputs = [...container.querySelectorAll('[data-period-input]')]) => {
+  const toggle = container.querySelector('[data-time-mode]');
+  if (!toggle || !inputs.length) return;
+  const setMode = () => {
+    const timeMode = toggle.checked;
+    inputs.forEach((input, index) => {
+      const isEnd = index % 2 === 1;
+      const date = operationalDateFromInput(input.value, isEnd);
+      input.type = timeMode ? 'datetime-local' : 'date';
+      if (timeMode) input.value = `${isEnd ? shiftCalendarDate(date, 1) : date}T${isEnd ? '06:59' : '07:00'}`;
+      else input.value = date;
+    });
+  };
+  toggle.addEventListener('change', setMode);
+  setMode();
+};
 
 document.querySelector('#standard-modal-button').addEventListener('click', () => document.querySelector('#standard-modal').showModal());
 
@@ -39,7 +74,7 @@ if (normalOverviewCard) {
     ['B \uc0dd\uc0b0\uc6d0\ub2e8\uc704', '10.4k', '\ubaa9\ud45c \ub300\ube44 -1.0%'],
     ['C \uc0dd\uc0b0\uc6d0\ub2e8\uc704', '6.8k', '\ubaa9\ud45c \ub300\ube44 -1.4%'],
     ['\uc57d\ud488 B \uc6d0\ub2e8\uc704', '0.392 kg/t', '\uc815\uc0c1 \uc0c1\ud55c \ub300\ube44 -2.2%'],
-    ['\uc2a4\ud300 \uc0ac\uc6a9\ub7c9', '963t', '\uc815\uc0c1 950~1,080t · \ubaa9\ud45c -3.7%'],
+    ['\uc2a4\ud300 \uc0ac\uc6a9\ub7c9 (t/h)', '963t/h', '\uc815\uc0c1 950~1,080t/h · \ubaa9\ud45c -3.7%'],
   ];
   normalKpiSummary.innerHTML = normalKpis.map((kpi) => '<div><span>' + kpi[0] + '</span><b>' + kpi[1] + '</b><small>' + kpi[2] + '</small></div>').join('');
   normalOverviewCard.querySelector('b').insertAdjacentElement('afterend', normalKpiSummary);
@@ -52,7 +87,7 @@ const kpiCardDetailData = {
     ['B \uc0dd\uc0b0\uc6d0\ub2e8\uc704', '10.4k', '\ubaa9\ud45c \ub300\ube44 -1.0%'],
     ['C \uc0dd\uc0b0\uc6d0\ub2e8\uc704', '6.8k', '\ubaa9\ud45c \ub300\ube44 -1.4%'],
     ['\uc57d\ud488 B \uc6d0\ub2e8\uc704', '0.392 kg/t', '\uc815\uc0c1 \uc0c1\ud55c \ub300\ube44 -2.2%'],
-    ['\uc2a4\ud300 \uc0ac\uc6a9\ub7c9', '963t', '\uc815\uc0c1 950~1,080t · \ubaa9\ud45c -3.7%'],
+    ['\uc2a4\ud300 \uc0ac\uc6a9\ub7c9 (t/h)', '963t/h', '\uc815\uc0c1 950~1,080t/h · \ubaa9\ud45c -3.7%'],
   ],
   warning: [['\uc57d\ud488 A \uc6d0\ub2e8\uc704', '0.475 kg/t', '\uc8fc\uc758 \uc0c1\ud55c 0.474 kg/t \ub300\ube44 +0.2%']],
   danger: [['\ud488\uc9c8\ud568\ub7c9', '2.38%', '\uc774\uc0c1 \uae30\uc900 2.35% \ub300\ube44 +0.03%p']],
@@ -101,7 +136,7 @@ if (overviewKpiBoard) {
     ['\uc815\uc0c1', 'B \uc0dd\uc0b0\uc6d0\ub2e8\uc704', '10.4k', '\uc815\uc0c1 \ubc94\uc704 10.0k ~ 10.8k', '\ubaa9\ud45c 10.5k \ub300\ube44 -1.0%', 'normal', 'M0 21 L35 20 L68 22 L100 18 L130 17 L160 19'],
     ['\uc815\uc0c1', 'C \uc0dd\uc0b0\uc6d0\ub2e8\uc704', '6.8k', '\uc815\uc0c1 \ubc94\uc704 6.5k ~ 7.1k', '\ubaa9\ud45c 6.9k \ub300\ube44 -1.4%', 'normal', 'M0 27 L35 24 L68 21 L100 20 L130 17 L160 18'],
     ['\uc815\uc0c1', '\uc57d\ud488 B \uc6d0\ub2e8\uc704', '0.392 kg/t', '\uc815\uc0c1 \uc0c1\ud55c 0.401 kg/t', '\ubaa9\ud45c 0.400 kg/t \ub300\ube44 -2.0%', 'normal', 'M0 18 L35 20 L68 19 L100 23 L130 22 L160 24'],
-    ['\uc815\uc0c1', '\uc2a4\ud300 \uc0ac\uc6a9\ub7c9', '963t', '\uc815\uc0c1 \ubc94\uc704 950 ~ 1,080t', '\ubaa9\ud45c 1,000t \ub300\ube44 -3.7%', 'normal', 'M0 14 L35 18 L68 17 L100 25 L130 29 L160 32'],
+    ['\uc815\uc0c1', '\uc2a4\ud300 \uc0ac\uc6a9\ub7c9 (t/h)', '963t/h', '\uc815\uc0c1 \ubc94\uc704 950 ~ 1,080t/h', '\ubaa9\ud45c 1,000t/h \ub300\ube44 -3.7%', 'normal', 'M0 14 L35 18 L68 17 L100 25 L130 29 L160 32'],
   ];
   const tbody = overviewKpiBoard.querySelector('tbody');
   kpiDetailRows.forEach((row) => {
@@ -120,10 +155,10 @@ if (overviewKpiBoard) {
 }
 const briefTop = document.querySelector('#brief .brief-top');
 if (briefTop) {
-  const briefDetails = document.createElement('section');
-  briefDetails.className = 'brief-kpi-status-details';
-  briefDetails.innerHTML = '<div><b>\uc815\uc0c1 KPI 6\uac1c</b>' + renderKpiCardDetail(kpiCardDetailData.normal) + '</div><div class="warning"><b>\uc8fc\uc758 KPI 1\uac1c</b>' + renderKpiCardDetail(kpiCardDetailData.warning) + '</div><div class="danger"><b>\uc774\uc0c1 KPI 1\uac1c</b>' + renderKpiCardDetail(kpiCardDetailData.danger) + '</div>';
-  briefTop.insertAdjacentElement('afterend', briefDetails);
+  const briefAlertKpis = document.createElement('section');
+  briefAlertKpis.className = 'brief-alert-kpis';
+  briefAlertKpis.innerHTML = '<div class="brief-alert-kpis-title">주의·이상 KPI 현황</div><div class="brief-alert-kpis-grid"><div class="brief-alert-group warning"><b>주의 KPI <em>0건</em></b><div class="brief-alert-items"></div></div><div class="brief-alert-group danger"><b>이상 KPI <em>0건</em></b><div class="brief-alert-items"></div></div></div>';
+  briefTop.insertAdjacentElement('afterend', briefAlertKpis);
 }
 const briefFull = document.querySelector('#brief .brief-full');
 if (briefFull) {
@@ -194,22 +229,22 @@ if (processResult) {
 const processPage = document.querySelector('#process');
 const managementStandardData = [
   { metric: '\ud488\uc9c8\ud568\ub7c9', actual: '2.38%', variance: '+0.03%p', status: 'danger', normal: '1.90 ~ 2.20%', warning: '2.20% \ucd08\uacfc', abnormal: '2.35% \ucd08\uacfc', effectiveFrom: '2024-01-01', version: 'v1.0' },
-  { metric: '\uc2a4\ud300 \uc0ac\uc6a9\ub7c9', actual: '963t', variance: '\uc815\uc0c1 \ubc94\uc704 \ub0b4', status: 'normal', normal: '950 ~ 1,080t', warning: '900t \ubbf8\ub9cc', abnormal: '850t \ubbf8\ub9cc', effectiveFrom: '2024-01-01', version: 'v1.0' },
+  { metric: '\uc2a4\ud300 \uc0ac\uc6a9\ub7c9 (t/h)', actual: '963t/h', variance: '\uc815\uc0c1 \ubc94\uc704 \ub0b4', status: 'normal', normal: '950 ~ 1,080t/h', warning: '900t/h \ubbf8\ub9cc', abnormal: '850t/h \ubbf8\ub9cc', effectiveFrom: '2024-01-01', version: 'v1.0' },
   { metric: '\uac00\uc2a4 \ucd9c\uad6c\uc628\ub3c4', actual: '142.5℃', variance: '\uc815\uc0c1 \ubc94\uc704 \ub0b4', status: 'normal', normal: '135 ~ 145℃', warning: '147℃ \ucd08\uacfc', abnormal: '150℃ \ucd08\uacfc', effectiveFrom: '2024-01-01', version: 'v1.0' },
   { metric: '\ud488\uc9c8\ud568\ub7c9', actual: '2.38%', variance: '+0.08%p', status: 'danger', normal: '1.88 ~ 2.18%', warning: '2.18% \ucd08\uacfc', abnormal: '2.30% \ucd08\uacfc', effectiveFrom: '2026-01-01', version: 'v1.1' },
-  { metric: '\uc2a4\ud300 \uc0ac\uc6a9\ub7c9', actual: '963t', variance: '\uc815\uc0c1 \ubc94\uc704 \ub0b4', status: 'normal', normal: '960 ~ 1,075t', warning: '910t \ubbf8\ub9cc', abnormal: '860t \ubbf8\ub9cc', effectiveFrom: '2026-01-01', version: 'v1.1' },
+  { metric: '\uc2a4\ud300 \uc0ac\uc6a9\ub7c9 (t/h)', actual: '963t/h', variance: '\uc815\uc0c1 \ubc94\uc704 \ub0b4', status: 'normal', normal: '960 ~ 1,075t/h', warning: '910t/h \ubbf8\ub9cc', abnormal: '860t/h \ubbf8\ub9cc', effectiveFrom: '2026-01-01', version: 'v1.1' },
   { metric: '\uac00\uc2a4 \ucd9c\uad6c\uc628\ub3c4', actual: '142.5℃', variance: '\uc815\uc0c1 \ubc94\uc704 \ub0b4', status: 'normal', normal: '136 ~ 144℃', warning: '146℃ \ucd08\uacfc', abnormal: '149℃ \ucd08\uacfc', effectiveFrom: '2026-01-01', version: 'v1.1' },
 ];
 const standardUsageAnalysisData = [
   { item: '\uac00\uc2a4 \uc0ac\uc6a9\ub7c9', target: '1.042M Nm³', actual: '1.069M Nm³', change: '+0.027M Nm³ (+2.6%)', profitImpact: '-10.2\ubc31\ub9cc\uc6d0', status: 'danger', note: '\ubaa9\ud45c \ub300\ube44 \ub354 \uc0ac\uc6a9' },
   { item: '\uc57d\ud488 A \uc0ac\uc6a9\ub7c9', target: '497kg', actual: '515kg', change: '+18kg (+3.6%)', profitImpact: '-8.2\ubc31\ub9cc\uc6d0', status: 'danger', note: '\ubaa9\ud45c \ub300\ube44 \ub354 \ud22c\uc785' },
-  { item: '\uc2a4\ud300 \uc0ac\uc6a9\ub7c9', target: '36.5t', actual: '38.1t', change: '+1.6t (+4.4%)', profitImpact: '+0.8\ubc31\ub9cc\uc6d0', status: 'normal', note: '\uae30\uc900 \ub300\ube44 \uc808\uac10 \ud6a8\uacfc' },
+  { item: '\uc2a4\ud300 \uc0ac\uc6a9\ub7c9 (t/h)', target: '36.5t/h', actual: '38.1t/h', change: '+1.6t/h (+4.4%)', profitImpact: '+0.8\ubc31\ub9cc\uc6d0', status: 'normal', note: '\uae30\uc900 \ub300\ube44 \uc808\uac10 \ud6a8\uacfc' },
 ];
 if (processResult) {
   const standardResult = document.createElement('article');
   standardResult.className = 'card standard-comparison-result';
   processResult.insertAdjacentElement('afterend', standardResult);
-  const processDateInputs = [...document.querySelectorAll('#process input[type="datetime-local"]')];
+  const processDateInputs = [...document.querySelectorAll('#process input[data-period-input]')];
   const renderStandardResult = () => {
     const mode = standardResult.querySelector('[data-standard-mode]')?.value || 'auto';
     const start = processDateInputs[0]?.value || '';
@@ -246,8 +281,8 @@ if (processPage) {
   processOverview.className = 'view';
   processOverview.innerHTML = `
     <div class="page-head split"><div><p class="eyebrow">PROCESS OVERVIEW</p><h1>\uacf5\uc815 \ud604\ud669</h1><p>\uc120\ud0dd\ud55c \uae30\uac04\uc758 \uc8fc\uc694 KPI\uc640 \uacf5\uc815\ubcc0\uc218 \ud604\ud669\uc744 \ud55c\ub208\uc5d0 \ud655\uc778\ud569\ub2c8\ub2e4.</p></div><span class="synthetic">\ud569\uc131 \ub370\uc774\ud130</span></div>
-    <article class="card process-overview-filter"><div class="period-inputs"><label>\uc870\ud68c \uc2dc\uc791<input type="datetime-local" value="2025-12-01T07:00"></label><label>\uc870\ud68c \uc885\ub8cc<input type="datetime-local" value="2025-12-31T07:00"></label></div><details class="metric-selector"><summary>\ud45c\uc2dc \uc9c0\ud45c \uc120\ud0dd <b class="visible-count">8\uac1c</b></summary><div class="metric-checks"></div></details><button class="primary" data-process-query>\uc870\ud68c</button></article>
-    <article class="card process-data-table"><div class="card-title"><div><h2>\uc870\ud68c \uae30\uac04 \uc2e4\uc801 \ub370\uc774\ud130</h2><p>\uc77c\uc790 \uc21c\uc73c\ub85c KPI\uc640 \uc8fc\uc694 \uacf5\uc815\ubcc0\uc218 \uc2e4\uc801\uc744 \ud45c\uc2dc\ud569\ub2c8\ub2e4.</p></div><span class="table-period-label"></span></div><div class="process-table-scroll"><table class="simple-table compact"><thead><tr><th>\uc77c\uc790</th><th>\uad6c\ubd84</th><th>\ud56d\ubaa9</th><th>\uc2e4\uc801</th></tr></thead><tbody></tbody></table></div></article>
+    <article class="card process-overview-filter"><div class="period-inputs"><label>\uc870\ud68c \uc2dc\uc791<input data-period-input type="date" value="2025-12-01"></label><label>\uc870\ud68c \uc885\ub8cc<input data-period-input type="date" value="2025-12-31"></label><label class="time-mode"><input data-time-mode type="checkbox"> 시간 단위 조회</label></div><details class="metric-selector"><summary>\ud45c\uc2dc \uc9c0\ud45c \uc120\ud0dd <b class="visible-count">8\uac1c</b></summary><div class="metric-checks"></div></details><button class="primary" data-process-query>\uc870\ud68c</button></article>
+    <article class="card process-data-table"><div class="card-title"><div><h2>\uc870\ud68c \uae30\uac04 \uc2e4\uc801 \ub370\uc774\ud130</h2><p>\uc77c\uc790 \uc21c\uc73c\ub85c KPI\uc640 \uc8fc\uc694 \uacf5\uc815\ubcc0\uc218 \uc2e4\uc801\uc744 \ud45c\uc2dc\ud569\ub2c8\ub2e4.</p></div><div class="table-actions"><span class="table-period-label"></span><button class="pill" type="button" data-process-export>\uc5d1\uc140 \ub2e4\uc6b4\ub85c\ub4dc \u2193</button></div></div><div class="process-table-scroll"><table class="simple-table compact"><thead><tr><th>\uc77c\uc790</th><th>\uad6c\ubd84</th><th>\ud56d\ubaa9</th><th>\uc2e4\uc801</th></tr></thead><tbody></tbody></table></div></article>
     <div class="overview-heading"><div><h2>\uc8fc\uc694 \uc9c0\ud45c \ud604\ud669</h2><p>\ud604\uc7ac\uac12\u00b7\uad00\ub9ac\uae30\uc900\u00b7\ucd94\uc774\ub97c \ud655\uc778\ud558\uace0 \ud544\uc694\ud55c \uc9c0\ud45c\ub9cc \uc120\ud0dd\ud574 \uc870\ud68c\ud569\ub2c8\ub2e4.</p></div><button class="outline" data-select-all>\uc804\uccb4 \uc9c0\ud45c \ubcf4\uae30</button></div>
     <div class="process-kpi-grid"></div>`;
   processPage.insertAdjacentElement('beforebegin', processOverview);
@@ -258,7 +293,7 @@ if (processPage) {
   const metrics = [
     ['\ud488\uc9c8\ud568\ub7c9', '2.38%', '\uc774\uc0c1 2.35%', 'danger', 'M0 39 L30 37 L58 38 L86 24 L114 10 L150 7'],
     ['\uc815\uc81c\ub7c9', '1,058k Nm\u00b3', '\uc815\uc0c1 1,012~1,081k', 'normal', 'M0 34 L30 31 L58 23 L86 26 L114 15 L150 18'],
-    ['\uc2a4\ud300 \uc0ac\uc6a9\ub7c9', '963t', '\uc815\uc0c1 950~1,080t', 'normal', 'M0 15 L30 18 L58 17 L86 27 L114 31 L150 34'],
+    ['\uc2a4\ud300 \uc0ac\uc6a9\ub7c9 (t/h)', '963t/h', '\uc815\uc0c1 950~1,080t/h', 'normal', 'M0 15 L30 18 L58 17 L86 27 L114 31 L150 34'],
     ['\uc57d\ud488 A \uc6d0\ub2e8\uc704', '0.475 kg/t', '\uc8fc\uc758 \uc0c1\ud55c 0.474', 'warning', 'M0 32 L30 28 L58 25 L86 27 L114 16 L150 13'],
     ['\uc57d\ud488 B \uc6d0\ub2e8\uc704', '0.392 kg/t', '\uc815\uc0c1 \uc0c1\ud55c 0.401', 'normal', 'M0 25 L30 24 L58 23 L86 20 L114 22 L150 25'],
     ['\uac00\uc2a4 \ucd9c\uad6c\uc628\ub3c4', '142.5\u2103', '\uc815\uc0c1 135~145\u2103', 'normal', 'M0 37 L30 34 L58 27 L86 20 L114 14 L150 12'],
@@ -272,7 +307,7 @@ if (processPage) {
     checks.insertAdjacentHTML('beforeend', `<label><input type="checkbox" data-process-filter value="${index}" checked>${name}</label>`);
   });
   const filterInputs = [...processOverview.querySelectorAll('[data-process-filter]')];
-  const overviewDateInputs = [...processOverview.querySelectorAll('input[type="datetime-local"]')];
+  const overviewDateInputs = [...processOverview.querySelectorAll('[data-period-input]')];
   const actualTableBody = processOverview.querySelector('.process-data-table tbody');
   const actualTableHead = processOverview.querySelector('.process-data-table thead');
   const actualPeriodLabel = processOverview.querySelector('.table-period-label');
@@ -280,7 +315,7 @@ if (processPage) {
   const dailyActuals = [
     ['2.10%', '2.13%', '2.16%', '2.19%', '2.25%', '2.30%', '2.34%', '2.36%', '2.38%'],
     ['1,028k Nm³', '1,034k Nm³', '1,041k Nm³', '1,037k Nm³', '1,052k Nm³', '1,061k Nm³', '1,055k Nm³', '1,063k Nm³', '1,058k Nm³'],
-    ['1,018t', '1,006t', '1,012t', '998t', '986t', '975t', '970t', '966t', '963t'],
+    ['1,018t/h', '1,006t/h', '1,012t/h', '998t/h', '986t/h', '975t/h', '970t/h', '966t/h', '963t/h'],
     ['0.468 kg/t', '0.470 kg/t', '0.469 kg/t', '0.471 kg/t', '0.472 kg/t', '0.473 kg/t', '0.474 kg/t', '0.475 kg/t', '0.475 kg/t'],
     ['0.389 kg/t', '0.390 kg/t', '0.391 kg/t', '0.392 kg/t', '0.393 kg/t', '0.392 kg/t', '0.391 kg/t', '0.392 kg/t', '0.392 kg/t'],
     ['137.1℃', '138.0℃', '139.2℃', '140.1℃', '141.0℃', '142.0℃', '142.8℃', '143.1℃', '142.5℃'],
@@ -307,7 +342,13 @@ if (processPage) {
   };
   filterInputs.forEach((input) => input.addEventListener('change', () => { syncMetricFilter(); renderActualTable(); }));
   processOverview.querySelector('[data-select-all]').addEventListener('click', () => { filterInputs.forEach((input) => { input.checked = true; }); syncMetricFilter(); renderActualTable(); });
+  installPeriodMode(processOverview, overviewDateInputs);
   processOverview.querySelector('[data-process-query]').addEventListener('click', renderActualTable);
+  processOverview.querySelector('[data-process-export]').addEventListener('click', () => {
+    const table = processOverview.querySelector('.process-data-table table');
+    const html = '<html><head><meta charset="UTF-8"></head><body>' + table.outerHTML + '</body></html>';
+    const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([html], { type: 'application/vnd.ms-excel' })); link.download = '공정현황_조회결과.xls'; link.click(); URL.revokeObjectURL(link.href);
+  });
   renderActualTable();
   processOverview.querySelector('[data-process-query]').addEventListener('click', () => { processOverview.querySelector('.overview-heading p').textContent = '\uc120\ud0dd\ud55c \uae30\uac04\uc758 \uc870\ud68c \uacb0\uacfc\uc785\ub2c8\ub2e4. \ud544\uc694\ud55c \uc9c0\ud45c\ub9cc \uc120\ud0dd\ud574 \ud655\uc778\ud558\uc138\uc694.'; });
 }
@@ -330,12 +371,13 @@ const addImpactPeriodFilter = (viewId, title) => {
   if (!pageHead) return;
   const filter = document.createElement('article');
   filter.className = 'card impact-period-filter';
-  filter.innerHTML = '<div class="impact-period-label"><b>' + title + ' \uc870\ud68c \uae30\uac04</b><span>\ud569\uc131 \ub370\uc774\ud130 \uae30\uc900</span></div><div class="impact-period-inputs"><label>\uc2dc\uc791<input type="datetime-local" value="2025-12-01T07:00"></label><label>\uc885\ub8cc<input type="datetime-local" value="2025-12-31T07:00"></label></div><div class="impact-quick"><button type="button">\uc804\uc77c</button><button type="button">\uc804 7\uc77c</button><button type="button">\uc804 30\uc77c</button></div><button class="primary" type="button">\uc870\ud68c</button><small class="impact-period-selected"></small>';
+  filter.innerHTML = '<div class="impact-period-label"><b>' + title + ' \uc870\ud68c \uae30\uac04</b><span>\ud569\uc131 \ub370\uc774\ud130 \uae30\uc900</span></div><div class="impact-period-inputs"><label>\uc2dc\uc791<input data-period-input type="date" value="2025-12-01"></label><label>\uc885\ub8cc<input data-period-input type="date" value="2025-12-31"></label><label class="time-mode"><input data-time-mode type="checkbox"> 시간 단위 조회</label></div><div class="impact-quick"><button type="button">\uc804\uc77c</button><button type="button">\uc804 7\uc77c</button><button type="button">\uc804 30\uc77c</button></div><button class="primary" type="button">\uc870\ud68c</button><small class="impact-period-selected"></small>';
   pageHead.insertAdjacentElement('afterend', filter);
-  const inputs = [...filter.querySelectorAll('input')];
+  const inputs = [...filter.querySelectorAll('[data-period-input]')];
   const selected = filter.querySelector('.impact-period-selected');
   const format = (value) => value.slice(0, 10).replaceAll('-', '.');
   const updateSelected = () => { selected.textContent = '\uc801\uc6a9 \uae30\uac04: ' + format(inputs[0].value) + ' ~ ' + format(inputs[1].value); };
+  installPeriodMode(filter, inputs);
   filter.querySelector('.primary').addEventListener('click', updateSelected);
   updateSelected();
 };
@@ -345,7 +387,9 @@ addImpactPeriodFilter('#diagnosis', '\uc774\uc0c1 \uc9c4\ub2e8');
 addImpactPeriodFilter('#cost', '\uc190\uc775 \uc601\ud5a5');
 
 let profitImpactFilters = { start: '2025-01-01', end: '2025-12-31' };
-let profitImpactData = window.CogDataService.getCostRecords(profitImpactFilters).map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
+const rangeDays = (filters) => Math.max(1, Math.round((new Date(filters.end) - new Date(filters.start)) / 86400000) + 1);
+let profitGranularity = rangeDays(profitImpactFilters) <= 31 ? 'day' : 'month';
+let profitImpactData = window.CogDataService.getCostRecords({ ...profitImpactFilters, granularity: profitGranularity });
 
 const waterfall = document.querySelector('#cost .waterfall');
 if (waterfall) {
@@ -361,6 +405,7 @@ if (waterfall) {
   const maxTotal = Math.max(...totals.map((row) => Math.abs(row.actual)), 1);
   const moneyLabel = (value) => (value >= 0 ? '+' : '') + value.toFixed(1) + '\ubc31\ub9cc\uc6d0';
   impactCard.innerHTML = '<div class="card-title"><div><h2>\ud56d\ubaa9\ubcc4 \uc190\uc775 \uc601\ud5a5</h2><p>\uc120\ud0dd \uae30\uac04 \ub204\uacc4 \uae08\uc561\uacfc \uae30\uc900 \ub300\ube44 \uc808\uac10 \ud6a8\uacfc\ub97c \ud655\uc778\ud569\ub2c8\ub2e4.</p></div><span class="criterion-key">\uae30\uc900 \ub300\ube44 = \uc2e4\uc81c \uc190\uc775\uc601\ud5a5 - \uae30\uc900 \uc190\uc775\uc601\ud5a5</span></div><div class="impact-composition-chart">' + totals.map((row, index) => '<div class="impact-bar-row impact-' + index + '"><div><b>' + row.costItem + '</b><span>' + moneyLabel(row.actual) + ' <em>(\uae30\uc900 \ub300\ube44 ' + moneyLabel(row.variance) + ')</em></span></div><i><em style="width:' + (Math.abs(row.actual) / maxTotal * 100) + '%"></em></i><small>\uae30\uc900 ' + moneyLabel(row.baseline) + ' · ' + (row.variance >= 0 ? '\uc808\uac10' : '\uc545\ud654') + ' ' + Math.abs(row.variance / (row.baseline || 1) * 100).toFixed(1) + '%</small></div>').join('') + '</div>';
+  impactCard.querySelector('.card-title').insertAdjacentHTML('beforeend', '<div class="profit-toolbar"><div class="segmented"><button type="button" data-profit-granularity="day">\uc77c\ubcc4</button><button type="button" data-profit-granularity="month">\uc6d4\ubcc4</button></div><button class="pill" type="button" data-profit-export>\uc5d1\uc140 \ub2e4\uc6b4\ub85c\ub4dc \u2193</button></div>');
   waterfall.closest('.card').replaceWith(impactCard);
 }
 
@@ -373,6 +418,8 @@ if (monthlyNet) {
   const detailItems = [...costItems, ...['약품 A', '약품 B'].filter((item) => !costItems.includes(item))];
   const money = (value) => (value >= 0 ? '+' : '') + value.toFixed(1) + '\ubc31\ub9cc\uc6d0';
   const rowClass = (value) => value >= 0 ? 'positive' : 'negative';
+  const profitRowsFor = (costItem) => window.CogDataService.getCostRecords({ ...profitImpactFilters, granularity: profitGranularity, costItem }).map((row) => ({ ...row, month: profitGranularity === 'day' ? row.period.slice(5) : Number(row.period.slice(5, 7)) }));
+  const periodLabel = (row) => profitGranularity === 'day' ? row.period.slice(5).replace('-', '/') : row.period.slice(2);
   let selectedProfitChartItem = null;
   const renderProfitItemCharts = (focusedItem = selectedProfitChartItem) => {
     const chartItems = focusedItem ? [focusedItem] : costItems;
@@ -380,7 +427,7 @@ if (monthlyNet) {
       const rows = (costItem === '약품 A' || costItem === '약품 B'
         ? window.CogDataService.getCostRecords({ ...profitImpactFilters, costItem })
         : profitImpactData.filter((row) => row.costItem === costItem))
-        .map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
+        .map((row) => ({ ...row, month: profitGranularity === 'day' ? row.period.slice(5) : Number(row.period.slice(5, 7)) }));
       const maxValue = Math.max(1.4, ...rows.map((row) => Math.abs(row.actualProfitImpact)));
       const actualTotal = rows.reduce((sum, row) => sum + row.actualProfitImpact, 0);
       const baselineTotal = rows.reduce((sum, row) => sum + row.baselineProfitImpact, 0);
@@ -405,7 +452,8 @@ if (monthlyNet) {
       ? window.CogDataService.getCostRecords({ ...profitImpactFilters, costItem: selectedItem })
       : profitImpactData.filter((row) => row.costItem === selectedItem))
       .map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
-    const displayedMonths = [...new Set(selectedRows.map((row) => row.month))].sort((a, b) => a - b);
+    selectedRows.splice(0, selectedRows.length, ...profitRowsFor(selectedItem));
+    const displayedMonths = [...new Set(selectedRows.map((row) => row.period))].sort();
     const maxValue = Math.max(1.4, ...selectedRows.flatMap((row) => [Math.abs(row.actualProfitImpact), Math.abs(row.baselineProfitImpact)]));
     const chartHeight = 190;
     const zeroY = 100;
@@ -443,6 +491,13 @@ if (monthlyNet) {
   };
   renderDetail(detailItems.includes('약품 전체') ? '약품 전체' : costItems[0]);
   window.__renderProfitImpactDetail = renderDetail;
+  window.__setProfitGranularity = (value) => {
+    profitGranularity = value;
+    profitImpactData = window.CogDataService.getCostRecords({ ...profitImpactFilters, granularity: value });
+    renderDetail(dataDrivenState.selectedProfitItem || costItems[0]);
+    document.querySelectorAll('#cost .profit-month').forEach((element) => element.classList.add('profit-period-label'));
+    document.querySelectorAll('#cost [data-profit-granularity]').forEach((button) => button.classList.toggle('selected', button.dataset.profitGranularity === value));
+  };
   const topImpactCard = document.querySelector('#cost .impact-composition-card');
   const topImpactChart = topImpactCard?.querySelector('.impact-composition-chart');
   if (topImpactChart) topImpactChart.replaceWith(document.createRange().createContextualFragment(renderProfitItemCharts()));
@@ -459,6 +514,8 @@ if (monthlyNet) {
     compositionCard.classList.add('profit-composition-side');
     tableWithComposition.appendChild(compositionCard);
   }
+  cost.querySelector('.metric-grid')?.remove();
+  cost.querySelector('.impact-period-filter')?.insertAdjacentElement('afterend', profitDetail);
   window.refreshProfitImpactView = (selectedItem = dataDrivenState?.selectedProfitItem || costItems[0]) => {
     const available = detailItems;
     const item = available.includes(selectedItem) ? selectedItem : available[0];
@@ -489,7 +546,7 @@ const latestDataPeriod = window.CogMockData.dailyObservations.map((row) => row.p
 dataDrivenState.start = latestDataPeriod;
 dataDrivenState.end = latestDataPeriod;
 const processAnalysisState = { metricIds: ['qualityContent', 'steamUsage', 'gasOutletTemp'] };
-const formatMetricValue = (summary) => !summary?.hasData || summary.value === null ? '-' : `${summary.value.toLocaleString(undefined, { maximumFractionDigits: summary.decimals })}${summary.unit ? ` ${summary.unit}` : ''}`;
+const formatMetricValue = (summary) => !summary?.hasData || !Number.isFinite(summary.value) ? '-' : `${summary.value.toLocaleString(undefined, { maximumFractionDigits: summary.decimals })}${summary.unit ? ` ${summary.unit}` : ''}`;
 const statusClass = (status) => status === 'abnormal' ? 'danger' : status === 'warning' ? 'warning' : 'normal';
 const statusLabel = (status) => status === 'abnormal' ? '이상' : status === 'warning' ? '주의' : '정상';
 const kpiDetailState = { overview: false, brief: false, summaries: [] };
@@ -571,6 +628,17 @@ function renderOverviewSparks(summaries) {
 }
 function renderBriefAndOverviewSummary(summaries, profit) {
   const groups = ['normal', 'warning', 'abnormal'].map((status) => summaries.filter((item) => item.status === status));
+  const alertSection = document.querySelector('#brief .brief-alert-kpis');
+  if (alertSection) {
+    [['warning', groups[1], '주의 KPI'], ['danger', groups[2], '이상 KPI']].forEach(([className, items, title]) => {
+      const group = alertSection.querySelector(`.brief-alert-group.${className}`);
+      if (!group) return;
+      group.querySelector('b').innerHTML = `${title} <em>${items.length}건</em>`;
+      const list = group.querySelector('.brief-alert-items');
+      if (!list) return;
+      list.innerHTML = items.length ? items.map((item) => `<div class="brief-alert-item"><div><span>${item.label}</span><strong>${formatMetricValue(item)}</strong></div><small>${standardText(item)} · 기준 대비 ${item.variance >= 0 ? '+' : ''}${item.variance}${item.unit}</small></div>`).join('') : '<span class="brief-alert-empty">현재 해당 KPI 없음</span>';
+    });
+  }
   document.querySelectorAll('.brief-kpi-satisfaction').forEach((element) => {
     element.innerHTML = `<b>KPI 만족 현황</b><span><strong>${summaries.length}개 중 ${groups[0].length}개 정상</strong> · 주의 ${groups[1].length}개(${groups[1].map((item) => item.label).join(', ') || '없음'}) · 이상 ${groups[2].length}개(${groups[2].map((item) => item.label).join(', ') || '없음'})</span><em>우선 조치: ${groups[2][0]?.label || '정상 운영 유지'} ${groups[2][0] ? '이상 원인 점검' : ''}</em>`;
   });
@@ -670,8 +738,17 @@ function removeMeaninglessProfitBaselines() {
 }
 function syncSharedPeriodPresentation() {
   const { start, end } = dataDrivenState;
-  document.querySelectorAll('#overview .overview-period-filter input').forEach((input, index) => { input.value = index === 0 ? start : end; });
-  document.querySelectorAll('#cost .impact-period-filter input, #diagnosis .impact-period-filter input, #process input[type="datetime-local"], #processOverview input[type="datetime-local"]').forEach((input, index) => { input.value = index % 2 === 0 ? start : end; });
+  document.querySelectorAll('#overview .overview-period-filter, #cost .impact-period-filter, #diagnosis .impact-period-filter, #processOverview .process-overview-filter').forEach((container) => {
+    const inputs = [...container.querySelectorAll('[data-period-input]')];
+    if (inputs.length < 2) return;
+    const timeMode = Boolean(container.querySelector('[data-time-mode]')?.checked);
+    inputs[0].value = timeMode ? `${start.slice(0, 10)}T07:00` : start.slice(0, 10);
+    inputs[1].value = timeMode ? `${shiftCalendarDate(end, 1)}T06:59` : end.slice(0, 10);
+  });
+  document.querySelectorAll('#process .date-pair:not(.compare) input[data-period-input]').forEach((input, index) => {
+    const timeMode = Boolean(document.querySelector('#process [data-time-mode]')?.checked);
+    input.value = timeMode ? (index === 0 ? `${start.slice(0, 10)}T07:00` : `${shiftCalendarDate(end, 1)}T06:59`) : (index === 0 ? start.slice(0, 10) : end.slice(0, 10));
+  });
   const briefPeriod = document.querySelector('#brief .page-head p');
   if (briefPeriod) briefPeriod.textContent = `기준일 ${window.CogMockData.metadata.referenceAt.slice(0, 10).replaceAll('-', '.')} · 조회 기간 ${start.replaceAll('-', '.')} ~ ${end.replaceAll('-', '.')}`;
 }
@@ -684,7 +761,12 @@ function shiftPeriodStart(endValue, days) {
 
 function refreshDataDrivenViews(nextState = {}, options = {}) {
   Object.assign(dataDrivenState, nextState);
-  const filters = { start: dataDrivenState.start, end: dataDrivenState.end, plant: dataDrivenState.plant, process: dataDrivenState.process, product: dataDrivenState.product };
+  const filters = { start: dataDrivenState.start, end: dataDrivenState.end, granularity: dataDrivenState.granularity || 'day', plant: dataDrivenState.plant, process: dataDrivenState.process, product: dataDrivenState.product };
+  if (typeof profitGranularity !== 'undefined' && typeof profitImpactFilters !== 'undefined') {
+    profitImpactFilters = { ...filters, granularity: filters.granularity === 'hour' ? 'hour' : (rangeDays(filters) <= 31 ? 'day' : 'month') };
+    profitGranularity = profitImpactFilters.granularity;
+    profitImpactData = window.CogDataService.getCostRecords(profitImpactFilters);
+  }
   const summaries = window.CogDataService.getKpiSummaries(filters);
   const profit = window.CogDataService.getCostSummary(filters);
   renderKpiTables(summaries);
@@ -706,7 +788,7 @@ function refreshDataDrivenViews(nextState = {}, options = {}) {
 document.querySelectorAll('.impact-period-filter').forEach((filter) => {
   const inputs = filter.querySelectorAll('input');
   const applyPeriod = () => {
-    const period = { start: inputs[0].value, end: inputs[1].value };
+    const period = readPeriodRange(filter, [...filter.querySelectorAll('[data-period-input]')]);
     if (filter.closest('#cost')) {
       profitImpactFilters = period;
       profitImpactData = window.CogDataService.getCostRecords(period).map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
@@ -718,7 +800,8 @@ document.querySelectorAll('.impact-period-filter').forEach((filter) => {
   filter.querySelector('.primary')?.addEventListener('click', applyPeriod);
   filter.querySelectorAll('.impact-quick button').forEach((button, index) => button.addEventListener('click', () => {
     const end = dataDrivenState.end?.slice(0, 10) || window.CogMockData.metadata.referenceAt.slice(0, 10); const days = [1, 7, 30][index];
-    inputs[0].value = shiftPeriodStart(end, days); inputs[1].value = `${end}T07:00`;
+    const periodInputs = [...filter.querySelectorAll('[data-period-input]')];
+    periodInputs[0].value = shiftPeriodStart(end, days).slice(0, 10); periodInputs[1].value = end;
     applyPeriod();
   }));
 });
@@ -727,7 +810,7 @@ window.refreshDataDrivenViews = refreshDataDrivenViews;
 refreshDataDrivenViews();
 
 const referenceAt = window.CogMockData.metadata.referenceAt;
-document.querySelector('#overview .filters button')?.replaceChildren(`▣ 기준일 ${referenceAt.slice(0, 10).replaceAll('-', '.')}`);
+document.querySelector('#overview .filters [data-reference-button]')?.replaceChildren(`▣ 기준일 ${referenceAt.slice(0, 10).replaceAll('-', '.')}`);
 const briefPeriodText = document.querySelector('#brief .page-head p');
 if (briefPeriodText) briefPeriodText.textContent = `기준일 ${referenceAt.slice(0, 10).replaceAll('-', '.')} · 조회 기간 ${dataDrivenState.start.replaceAll('-', '.')} ~ ${dataDrivenState.end.replaceAll('-', '.')}`;
 
@@ -737,10 +820,10 @@ if (processOverviewBridge) {
   const metricDefs = window.CogMockData.metricDefinitions;
   const grid = processOverviewBridge.querySelector('.process-kpi-grid');
   const checks = processOverviewBridge.querySelector('.metric-checks');
-  const inputs = [...processOverviewBridge.querySelectorAll('input[type="datetime-local"]')];
+  const inputs = [...processOverviewBridge.querySelectorAll('[data-period-input]')];
   const table = processOverviewBridge.querySelector('.process-data-table');
   const renderProcessOverview = () => {
-    const filters = { start: inputs[0].value, end: inputs[1].value };
+    const filters = readPeriodRange(processOverviewBridge, inputs);
     const summaries = window.CogDataService.getKpiSummaries(filters).filter((item) => metricDefs.some((definition) => definition.id === item.id));
     const selectedInputs = [...checks.querySelectorAll('input:checked')];
     const selectedIds = selectedInputs.map((input) => input.value);
@@ -757,9 +840,9 @@ if (processOverviewBridge) {
     checks.querySelectorAll('input').forEach((input) => { input.checked = true; });
     renderProcessOverview();
   });
-  processOverviewBridge.querySelector('[data-process-query]')?.addEventListener('click', () => { renderProcessOverview(); refreshDataDrivenViews({ start: inputs[0].value, end: inputs[1].value }); });
-  inputs[0].value = `${dataDrivenState.start}T07:00`;
-  inputs[1].value = `${dataDrivenState.end}T07:00`;
+  processOverviewBridge.querySelector('[data-process-query]')?.addEventListener('click', () => { renderProcessOverview(); refreshDataDrivenViews(readPeriodRange(processOverviewBridge, inputs)); });
+  inputs[0].value = dataDrivenState.start.slice(0, 10);
+  inputs[1].value = dataDrivenState.end.slice(0, 10);
   renderProcessOverview();
   window.refreshProcessOverview = renderProcessOverview;
 }
@@ -768,11 +851,10 @@ function openProcessOverviewForState(event) {
   event?.preventDefault();
   const target = document.querySelector('#processOverview');
   if (!target) return;
-  const inputs = [...target.querySelectorAll('input[type="datetime-local"]')];
+  const inputs = [...target.querySelectorAll('[data-period-input]')];
   if (inputs.length >= 2) {
-    const asDateTimeInput = (value) => value.includes('T') ? value.slice(0, 16) : `${value}T07:00`;
-    inputs[0].value = asDateTimeInput(dataDrivenState.start);
-    inputs[1].value = asDateTimeInput(dataDrivenState.end);
+    inputs[0].value = dataDrivenState.start.slice(0, 10);
+    inputs[1].value = dataDrivenState.end.slice(0, 10);
   }
   showView('processOverview');
   target.querySelector('[data-process-query]')?.click();
@@ -781,8 +863,8 @@ document.querySelectorAll('#overview [data-view="process"], #brief [data-view="p
 
 // Comparison/standard-analysis query controls share the selected period with all other views.
 document.querySelector('#process [data-process-query]')?.addEventListener('click', () => {
-  const processInputs = [...document.querySelectorAll('#process input[type="datetime-local"]')];
-  if (processInputs.length >= 2) refreshDataDrivenViews({ start: processInputs[0].value, end: processInputs[1].value });
+  const processInputs = [...document.querySelectorAll('#process input[data-period-input]')];
+  if (processInputs.length >= 2) refreshDataDrivenViews(readPeriodRange(document.querySelector('#process'), processInputs.slice(0, 2)));
 });
 
 // Overview uses the same date state as all sub-screens; this control only adds the requested period selector.
@@ -790,25 +872,27 @@ const overviewHead = document.querySelector('#overview .page-head');
 if (overviewHead) {
   const overviewPeriodFilter = document.querySelector('#overview .overview-period-filter') || document.createElement('article');
   overviewPeriodFilter.className = 'card overview-period-filter';
-  overviewPeriodFilter.innerHTML = '<div class="impact-period-label"><b>통합현황 조회 기간</b><span>선택 기간의 KPI·손익영향을 함께 조회합니다.</span></div><div class="impact-period-inputs"><label>시작<input type="datetime-local" value="2025-12-01T07:00"></label><label>종료<input type="datetime-local" value="2025-12-31T07:00"></label></div><div class="impact-quick"><button type="button" data-overview-range="1">전일</button><button type="button" data-overview-range="7">전 7일</button><button type="button" data-overview-range="30">전 30일</button></div><button class="primary" type="button">조회</button><small class="impact-period-selected"></small>';
+  overviewPeriodFilter.innerHTML = '<div class="impact-period-label"><b>통합현황 조회 기간</b><span>선택 기간의 KPI·손익영향을 함께 조회합니다.</span></div><div class="impact-period-inputs"><label>시작<input data-period-input type="date" value="2025-12-31"></label><label>종료<input data-period-input type="date" value="2025-12-31"></label><label class="time-mode"><input data-time-mode type="checkbox"> 시간 단위 조회</label></div><div class="impact-quick"><button type="button" data-overview-range="1">전일</button><button type="button" data-overview-range="7">전 7일</button><button type="button" data-overview-range="30">전 30일</button></div><button class="primary" type="button">조회</button><small class="impact-period-selected"></small>';
   overviewHead.insertAdjacentElement('afterend', overviewPeriodFilter);
-  const inputs = [...overviewPeriodFilter.querySelectorAll('input')];
-  inputs[0].value = `${dataDrivenState.start.slice(0, 10)}T07:00`;
-  inputs[1].value = `${dataDrivenState.end.slice(0, 10)}T07:00`;
+  const inputs = [...overviewPeriodFilter.querySelectorAll('[data-period-input]')];
+  inputs[0].value = dataDrivenState.start.slice(0, 10);
+  inputs[1].value = dataDrivenState.end.slice(0, 10);
   const applyOverviewRange = () => {
-    const state = { start: inputs[0].value, end: inputs[1].value };
+    const state = readPeriodRange(overviewPeriodFilter, inputs);
     overviewPeriodFilter.querySelector('.impact-period-selected').textContent = `적용 기간: ${state.start.replaceAll('-', '.')} ~ ${state.end.replaceAll('-', '.')}`;
     refreshDataDrivenViews(state);
   };
   overviewPeriodFilter.querySelector('.primary').addEventListener('click', applyOverviewRange);
   overviewPeriodFilter.querySelectorAll('[data-overview-range]').forEach((button) => button.addEventListener('click', () => {
     const end = dataDrivenState.end?.slice(0, 10) || window.CogMockData.metadata.referenceAt.slice(0, 10);
-    inputs[0].value = shiftPeriodStart(end, Number(button.dataset.overviewRange)); inputs[1].value = `${end}T07:00`; applyOverviewRange();
+    inputs[0].value = shiftPeriodStart(end, Number(button.dataset.overviewRange)).slice(0, 10); inputs[1].value = end; applyOverviewRange();
   }));
+  installPeriodMode(overviewPeriodFilter, inputs);
   applyOverviewRange();
 }
 
 const processAnalysis = document.querySelector('#process');
+if (processAnalysis) installPeriodMode(processAnalysis, [...processAnalysis.querySelectorAll('input[data-period-input]')]);
 function syncProcessMetricChips() {
   if (!processAnalysis) return;
   const chipBox = processAnalysis.querySelector('.chips');
@@ -857,15 +941,42 @@ function initialiseProcessMetricControls() {
 }
 function applyProcessQuickRange(kind) {
   if (!processAnalysis) return;
-  const inputs = [...processAnalysis.querySelectorAll('input[type="datetime-local"]')];
+  const inputs = [...processAnalysis.querySelectorAll('input[data-period-input]')];
   if (inputs.length < 4) return;
-  const ranges = {
-    '전일': ['2025-09-12T07:00', '2025-09-13T06:59', '2025-09-11T07:00', '2025-09-12T06:59'],
-    '전월': ['2025-09-01T07:00', '2025-09-12T06:59', '2025-08-01T07:00', '2025-08-12T06:59'],
-    '전년 동월': ['2025-09-01T07:00', '2025-09-12T06:59', '2024-09-01T07:00', '2024-09-12T06:59'],
-    '전분기': ['2025-09-01T07:00', '2025-09-12T06:59', '2025-06-01T07:00', '2025-06-12T06:59'],
-  };
-  (ranges[kind] || ranges['전일']).forEach((value, index) => { inputs[index].value = value; });
+  const endDate = new Date(`${(inputs[1].value || dataDrivenState.end).slice(0, 10)}T00:00:00Z`);
+  const iso = (date) => `${date.toISOString().slice(0, 10)}T07:00`;
+  const endOfDay = (date) => `${date.toISOString().slice(0, 10)}T06:59`;
+  const shift = (date, days) => { const value = new Date(date); value.setUTCDate(value.getUTCDate() + days); return value; };
+  let baseStart;
+  let baseEnd;
+  let compareStart;
+  let compareEnd;
+  if (kind.includes('전월')) {
+    baseStart = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth() - 1, 1));
+    baseEnd = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), 0));
+    compareStart = new Date(Date.UTC(baseStart.getUTCFullYear(), baseStart.getUTCMonth() - 1, 1));
+    compareEnd = new Date(Date.UTC(baseStart.getUTCFullYear(), baseStart.getUTCMonth(), 0));
+  } else if (kind.includes('전년')) {
+    baseStart = new Date(Date.UTC(endDate.getUTCFullYear() - 1, endDate.getUTCMonth(), 1));
+    baseEnd = new Date(Date.UTC(endDate.getUTCFullYear() - 1, endDate.getUTCMonth() + 1, 0));
+    compareStart = new Date(Date.UTC(endDate.getUTCFullYear() - 2, endDate.getUTCMonth(), 1));
+    compareEnd = new Date(Date.UTC(endDate.getUTCFullYear() - 2, endDate.getUTCMonth() + 1, 0));
+  } else if (kind.includes('전분기')) {
+    const quarter = Math.floor(endDate.getUTCMonth() / 3) - 1;
+    const year = endDate.getUTCFullYear() + Math.floor(quarter / 4);
+    const month = ((quarter % 4) + 4) % 4 * 3;
+    baseStart = new Date(Date.UTC(year, month, 1));
+    baseEnd = new Date(Date.UTC(year, month + 3, 0));
+    compareStart = new Date(Date.UTC(year - 1, month, 1));
+    compareEnd = new Date(Date.UTC(year - 1, month + 3, 0));
+  } else {
+    baseEnd = endDate;
+    baseStart = shift(endDate, -1);
+    compareEnd = shift(baseStart, -1);
+    compareStart = shift(compareEnd, -1);
+  }
+  const timeMode = Boolean(processAnalysis.querySelector('[data-time-mode]')?.checked);
+  [iso(baseStart), endOfDay(baseEnd), iso(compareStart), endOfDay(compareEnd)].forEach((value, index) => { inputs[index].value = timeMode ? value : value.slice(0, 10); });
   processAnalysis.querySelectorAll('.quick button').forEach((button) => button.classList.toggle('selected', button.textContent.trim() === kind));
   runProcessComparison({ syncSharedViews: true });
 }
@@ -880,9 +991,10 @@ function renderProcessRecentTrend(series, status) {
 
 function runProcessComparison({ syncSharedViews = false } = {}) {
   if (!processAnalysis) return;
-  const inputs = [...processAnalysis.querySelectorAll('input[type="datetime-local"]')];
-  const base = { start: inputs[0].value, end: inputs[1].value };
-  const compare = { start: inputs[2].value, end: inputs[3].value };
+  const inputs = [...processAnalysis.querySelectorAll('input[data-period-input]')];
+  const timeMode = Boolean(processAnalysis.querySelector('[data-time-mode]')?.checked);
+  const base = timeMode ? { start: inputs[0].value, end: inputs[1].value, granularity: 'hour' } : { start: inputs[0].value, end: inputs[1].value, granularity: 'day' };
+  const compare = timeMode ? { start: inputs[2].value, end: inputs[3].value, granularity: 'hour' } : { start: inputs[2].value, end: inputs[3].value, granularity: 'day' };
   const definitions = processAnalysisState.metricIds;
   const values = (range, metricId) => window.CogDataService.getMetricSeries(metricId, range).map((row) => row.value);
   const average = (items) => items.length ? items.reduce((sum, value) => sum + value, 0) / items.length : 0;
@@ -922,11 +1034,11 @@ if (processAnalysis) {
 function renderProcessStandardAnalysis() {
   const target = document.querySelector('#process .standard-comparison-result');
   if (!target) return;
-  const processInputs = [...document.querySelectorAll('#process input[type="datetime-local"]')];
+  const processInputs = [...document.querySelectorAll('#process input[data-period-input]')];
   const filters = processInputs.length >= 2 ? { start: processInputs[0].value, end: processInputs[1].value } : dataDrivenState;
   const summaries = window.CogDataService.getKpiSummaries(filters).filter((item) => processAnalysisState.metricIds.includes(item.id));
   const rows = summaries.map((item) => `<tr><td><b>${item.label}</b></td><td>${formatMetricValue(item)}</td><td><b>${item.standard.effectiveFrom}</b></td><td>${standardText(item)}</td><td>${item.standard.warningMax !== undefined ? `상한 ${item.standard.warningMax}${item.unit}` : `하한 ${item.standard.warningMin}${item.unit}`}</td><td><span class="status ${statusClass(item.status)}">${statusLabel(item.status)}</span></td><td class="${item.status === 'abnormal' ? 'red-text' : item.status === 'warning' ? 'orange' : 'positive'}">${item.variance >= 0 ? '+' : ''}${item.variance}${item.unit}</td></tr>`).join('');
-  const costRows = window.CogDataService.groupCostByItem({ start: '2025-01-01', end: '2025-12-31' }).map((row) => `<tr><td><b>${row.costItem}</b></td><td>${row.targetUsage.toLocaleString()}</td><td>${row.actualUsage.toLocaleString()}</td><td class="${row.actualUsage > row.targetUsage ? 'red-text' : 'positive'}">${(row.actualUsage - row.targetUsage).toFixed(1)}</td><td class="${row.variance >= 0 ? 'positive' : 'red-text'}">${row.variance >= 0 ? '+' : ''}${row.variance.toFixed(1)}백만원</td></tr>`).join('');
+  const costRows = window.CogDataService.groupCostByItem(filters).map((row) => `<tr><td><b>${row.costItem}</b></td><td>${row.targetUsage.toLocaleString()}</td><td>${row.actualUsage.toLocaleString()}</td><td class="${row.actualUsage > row.targetUsage ? 'red-text' : 'positive'}">${(row.actualUsage - row.targetUsage).toFixed(1)}</td><td class="${row.variance >= 0 ? 'positive' : 'red-text'}">${row.variance >= 0 ? '+' : ''}${row.variance.toFixed(1)}백만원</td></tr>`).join('');
   target.innerHTML = `<div class="card-title"><div><h2>관리기준 대비 분석</h2><p>선택 기간 실적을 적용 시점별 관리기준과 비교합니다.</p></div></div><div class="standard-application"><b>기준 적용 안내</b><span>기준 변경일 이후의 실적에는 해당 버전을 적용하고, 과거 실적은 당시 기준으로 판정합니다.</span></div><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>지표</th><th>선택 기간 실적</th><th>적용 기준일</th><th>정상 범위</th><th>주의 기준</th><th>판정</th><th>기준 대비</th></tr></thead><tbody>${rows}</tbody></table></div><h3 class="usage-analysis-title">사용량·손익 기준 대비</h3><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>관리 항목</th><th>기준 사용량</th><th>선택 기간 실제</th><th>사용량 증감</th><th>기준 대비 손익 영향</th></tr></thead><tbody>${costRows}</tbody></table></div>`;
 }
 renderProcessStandardAnalysis();
@@ -963,12 +1075,22 @@ function renderCopilotTopic(metricId) {
   if (!summary) return;
   const copilot = document.querySelector('#brief .copilot');
   if (!copilot) return;
+  const periodIssues = window.CogDataService.getPeriodIssues(dataDrivenState);
+  if (!periodIssues.length) {
+    const issue = copilot.querySelector('.copilot-grid > div:first-child');
+    if (issue) issue.innerHTML = '<h3>주요 핵심 이슈</h3><p>선택 기간에 관리기준 이탈이나 이상 항목이 없습니다.</p><div class="inline-standard"><b>정상 운영</b></div><h3>결론</h3><p>선택 기간의 모든 지표가 관리기준 범위 안에 있습니다.</p>';
+    const evidence = copilot.querySelector('.copilot-grid > div:last-child');
+    if (evidence) evidence.innerHTML = '<h3>확인 근거</h3><div class="evidence"><b>해당 기간 이상 없음</b><p>선택 기간의 모든 지표가 적용 관리기준 안에 있습니다.</p></div>';
+    const related = document.querySelector('#brief .related-metrics');
+    if (related) related.innerHTML = [summary, ...window.CogDataService.getKpiSummaries(dataDrivenState).filter((item) => ['steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06', 'gasOutletTemp', 'equipmentPressure'].includes(item.id))].map((item) => `<div class="related ${statusClass(item.status)}"><b>${item.label}</b><strong>${formatMetricValue(item)}</strong>${trendSvg(item)}<small>${standardText(item)}</small></div>`).join('');
+    return;
+  }
   const issue = copilot.querySelector('.copilot-grid > div:first-child');
   if (issue) issue.innerHTML = `<h3>주요 핵심 이슈</h3><p>${config.title}의 현재값과 관리기준 이탈 수준을 확인합니다.</p><div class="inline-standard"><span>현재값 <b>${formatMetricValue(summary)}</b></span><span>관리 기준 <b>${standardText(summary)}</b></span><span>기준 대비 <b class="${summary.status === 'abnormal' ? 'red-text' : summary.status === 'warning' ? 'orange' : 'positive'}">${summary.variance >= 0 ? '+' : ''}${summary.variance}${summary.unit}</b></span></div><h3>결론</h3><p>${config.conclusion}</p><p class="disclaimer">예상 원인·점검 후보이며 확정 원인이 아닙니다.</p>`;
   const evidence = copilot.querySelector('.copilot-grid > div:last-child');
   if (evidence) evidence.innerHTML = `<h3>확인 근거</h3><ul><li>${summary.label}: 현재 ${formatMetricValue(summary)}, ${standardText(summary)} 대비 <b>${summary.variance >= 0 ? '+' : ''}${summary.variance}${summary.unit}</b></li><li>목표 ${summary.standard.target}${summary.unit} 대비 <b>${summary.targetVariance >= 0 ? '+' : ''}${summary.targetVariance}${summary.unit}</b></li><li>적용 기준일: <b>${summary.standard.effectiveFrom}</b></li></ul><h3>권장 점검</h3><ol><li>${summary.label} 계측값과 시간대별 편차 확인</li><li>연관 공정 변수 및 설비 상태 확인</li><li>다음 조업일까지 관리기준 복귀 여부 모니터링</li></ol>`;
   const related = document.querySelector('#brief .related-metrics');
-  if (related) related.innerHTML = [summary, ...window.CogDataService.getKpiSummaries(dataDrivenState).filter((item) => ['steamM01', 'steamM02', 'steamM03', 'steamM04', 'gasOutletTemp', 'equipmentPressure'].includes(item.id))].map((item) => `<div class="related ${statusClass(item.status)}"><b>${item.label}</b><strong>${formatMetricValue(item)}</strong>${trendSvg(item)}<small>${standardText(item)}</small></div>`).join('');
+  if (related) related.innerHTML = [summary, ...window.CogDataService.getKpiSummaries(dataDrivenState).filter((item) => ['steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06', 'gasOutletTemp', 'equipmentPressure'].includes(item.id))].map((item) => `<div class="related ${statusClass(item.status)}"><b>${item.label}</b><strong>${formatMetricValue(item)}</strong>${trendSvg(item)}<small>${standardText(item)}</small></div>`).join('');
 }
 document.querySelectorAll('#brief .topic-chips button').forEach((button, index) => button.addEventListener('click', () => {
   const metricId = ['qualityContent', 'steamUsage', 'gasOutletTemp'][index];
@@ -1060,10 +1182,14 @@ document.querySelector('#diagnosis .event-chip')?.addEventListener('click', sele
 function renderCostFromData(filters = { start: dataDrivenState.start, end: dataDrivenState.end }) {
   const cost = document.querySelector('#cost');
   if (!cost) return;
-  const records = window.CogDataService.getCostRecords(filters);
   profitImpactFilters = filters;
-  profitImpactData = records.map((row) => ({ ...row, month: Number(row.period.slice(5, 7)) }));
+  profitGranularity = rangeDays(filters) <= 31 ? 'day' : 'month';
+  document.querySelectorAll('#cost .impact-composition-card [data-profit-granularity]').forEach((button) => button.classList.toggle('selected', button.dataset.profitGranularity === profitGranularity));
+  const periodRecords = window.CogDataService.getCostRecords({ ...filters, granularity: profitGranularity });
+  profitImpactData = periodRecords;
+  const records = periodRecords;
   window.refreshProfitImpactView?.(dataDrivenState.selectedProfitItem);
+  window.__renderProfitImpactDetail?.(dataDrivenState.selectedProfitItem);
   const grouped = window.CogDataService.groupCostByItem(filters);
   const total = window.CogDataService.getCostSummary(filters);
   const cards = cost.querySelectorAll('.metric-grid .metric');
@@ -1094,6 +1220,14 @@ function exportProfitCsv() {
   const rows = ['기간,손익항목,실제손익영향(백만원),기준손익영향(백만원),기준대비차이(백만원)', ...records.map((row) => `${row.period},${row.costItem},${row.actualProfitImpact},${row.baselineProfitImpact},${row.variance}`)];
   const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([`\uFEFF${rows.join('\n')}`], { type: 'text/csv' })); link.download = '손익영향_조회결과.csv'; link.click(); URL.revokeObjectURL(link.href);
 }
+document.querySelectorAll('#cost .impact-composition-card [data-profit-granularity]').forEach((button) => button.addEventListener('click', () => window.__setProfitGranularity?.(button.dataset.profitGranularity)));
+document.querySelectorAll('#cost .impact-composition-card [data-profit-granularity]').forEach((button) => button.classList.toggle('selected', button.dataset.profitGranularity === profitGranularity));
+function exportProfitExcel() {
+  const records = window.CogDataService.getCostRecords({ ...profitImpactFilters, granularity: profitGranularity });
+  const rows = [['기간', '원가항목', '실제 손익영향(백만원)', '기준 손익영향(백만원)', '기준 대비 차이(백만원)', '실제 사용량', '기준 사용량'], ...records.map((row) => [row.period, row.costItem, row.actualProfitImpact, row.baselineProfitImpact, row.variance, row.actualUsage, row.targetUsage])];
+  const table = '<table><thead><tr>' + rows[0].map((cell) => '<th>' + cell + '</th>').join('') + '</tr></thead><tbody>' + rows.slice(1).map((row) => '<tr>' + row.map((cell) => '<td>' + cell + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+  const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob(['<html><head><meta charset="UTF-8"></head><body>' + table + '</body></html>'], { type: 'application/vnd.ms-excel' })); link.download = '손익영향_항목별_조회결과.xls'; link.click(); URL.revokeObjectURL(link.href);
+}
 renderDiagnosisFromEvent();
 
 function wireOverviewHeaderControls() {
@@ -1108,12 +1242,9 @@ document.querySelector('#cost .page-head .filters button:last-child')?.addEventL
   const event = window.CogMockData.events.find((item) => item.id === dataDrivenState.selectedEventId);
   renderCostFromData({ start: event.startAt, end: event.endAt });
 });
-document.querySelectorAll('#cost .pill').forEach((button) => button.addEventListener('click', exportProfitCsv));
-document.querySelector('#brief .filters button:first-child')?.addEventListener('click', () => window.print());
-document.querySelector('#brief .filters button:last-child')?.addEventListener('click', () => {
-  const brief = document.querySelector('#brief .brief-full')?.innerText || ''; const link = document.createElement('a');
-  link.href = URL.createObjectURL(new Blob([brief], { type: 'text/plain' })); link.download = '화성공장_Brief.txt'; link.click(); URL.revokeObjectURL(link.href);
-});
+document.querySelector('#cost .profit-impact-detail .pill')?.remove();
+document.querySelector('#cost .impact-composition-card [data-profit-export]')?.addEventListener('click', exportProfitExcel);
+document.querySelector('#brief .page-head .filters')?.remove();
 
 function saveManagementStandard(form) {
   const metricLabel = form.querySelector('select')?.value;
