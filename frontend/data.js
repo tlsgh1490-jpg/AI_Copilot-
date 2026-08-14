@@ -7,7 +7,7 @@
     { id: 'chemicalA', label: '약품 A 원단위', unit: 'kg/t', direction: 'upper', decimals: 3 },
     { id: 'chemicalB', label: '약품 B 원단위', unit: 'kg/t', direction: 'upper', decimals: 3 },
     { id: 'steamUsage', label: '스팀 사용량', unit: 't', direction: 'range', decimals: 0 },
-    { id: 'qualityContent', label: '품질함량', unit: '%', direction: 'upper', decimals: 2 },
+    { id: 'qualityContent', label: '품질함량', unit: '%', direction: 'upper', decimals: 3 },
     { id: 'gasOutletTemp', label: '가스 출구온도', unit: '℃', direction: 'range', decimals: 1 },
     { id: 'steamM01', label: '스팀 M01', unit: 't/h', direction: 'range', decimals: 3 },
     { id: 'steamM02', label: '스팀 M02', unit: 't/h', direction: 'range', decimals: 3 },

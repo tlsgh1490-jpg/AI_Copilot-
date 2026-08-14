@@ -1,6 +1,5 @@
 (function () {
   const data = window.CogMockData;
-  const costRecordCache = new Map();
   const inRange = (value, start, end) => (!start || value >= start) && (!end || value <= end);
   const byDimensions = (row, filters) => ['plant', 'process', 'product'].every((key) => {
     const sourceValue = String(row[key] || '');
@@ -35,7 +34,8 @@
       if (!latest) {
         return { ...definition, value: null, period: null, series: [], status: 'noData', standard: getActiveStandard(definition.id, filters.end?.slice(0, 10)), variance: null, targetVariance: null, hasData: false };
       }
-      const value = latest.metrics[definition.id];
+      const values = observations.map((row) => row.metrics[definition.id]).filter((value) => Number.isFinite(value));
+      const value = values.length > 1 ? values.reduce((sum, item) => sum + item, 0) / values.length : latest.metrics[definition.id];
       const evaluation = evaluateMetric(definition.id, value, latest.period);
       const series = getMetricSeries(definition.id, filters);
       return { ...definition, value, period: latest.period, series, ...evaluation, targetVariance: +(value - evaluation.standard.target).toFixed(3), hasData: true };
@@ -100,11 +100,19 @@
           const [gas, chemicalA, chemicalB, steam] = sourceRows(row.timestamp);
           if (!gas || !chemicalA || !chemicalB || !steam) return [];
           const gasTarget = perHourTarget(gas, row.timestamp), aTarget = perHourTarget(chemicalA, row.timestamp), bTarget = perHourTarget(chemicalB, row.timestamp), steamTarget = perHourTarget(steam, row.timestamp);
+          const requested = filters.costItem || '';
+          const chemicalTotal = '약품 전체';
+          const chemicalAItem = '약품 A';
+          const chemicalBItem = '약품 B';
+          const include = (item) => !requested || requested === item;
+          const includeChemical = (item) => requested === item;
           return [
-            { costItem: values(gas)[1], usageLabel: values(gas)[1], usageUnit: 'Nm3', actualUsage: row.gasQuantity, targetUsage: gasTarget, impact: (row.gasQuantity - gasTarget) * rate(gas) / 1000000 },
-            { costItem: `${values(chemicalA)[1]} + ${values(chemicalB)[1]}`, usageLabel: `${values(chemicalA)[1]} + ${values(chemicalB)[1]}`, usageUnit: 'kg', actualUsage: row.chemicalAUsage + row.chemicalBUsage, targetUsage: aTarget + bTarget, impact: ((aTarget - row.chemicalAUsage) * rate(chemicalA) + (bTarget - row.chemicalBUsage) * rate(chemicalB)) / 1000000 },
-            { costItem: values(steam)[1], usageLabel: values(steam)[1], usageUnit: 't', actualUsage: row.steamUsage, targetUsage: steamTarget, impact: (steamTarget - row.steamUsage) * rate(steam) / 1000000 },
-          ].map((item) => ({ ...item, timestamp: row.timestamp, period: operationMonth(row.timestamp) }));
+            include(values(gas)[1]) ? { costItem: values(gas)[1], usageLabel: values(gas)[1], usageUnit: 'Nm3', actualUsage: row.gasQuantity, targetUsage: gasTarget, impact: (row.gasQuantity - gasTarget) * rate(gas) / 1000000 } : null,
+            include(chemicalTotal) ? { costItem: chemicalTotal, usageLabel: chemicalTotal, usageUnit: 'kg', actualUsage: row.chemicalAUsage + row.chemicalBUsage, targetUsage: aTarget + bTarget, impact: ((aTarget - row.chemicalAUsage) * rate(chemicalA) + (bTarget - row.chemicalBUsage) * rate(chemicalB)) / 1000000 } : null,
+            includeChemical(chemicalAItem) ? { costItem: chemicalAItem, usageLabel: chemicalAItem, usageUnit: 'kg', actualUsage: row.chemicalAUsage, targetUsage: aTarget, impact: (aTarget - row.chemicalAUsage) * rate(chemicalA) / 1000000 } : null,
+            includeChemical(chemicalBItem) ? { costItem: chemicalBItem, usageLabel: chemicalBItem, usageUnit: 'kg', actualUsage: row.chemicalBUsage, targetUsage: bTarget, impact: (bTarget - row.chemicalBUsage) * rate(chemicalB) / 1000000 } : null,
+            include(values(steam)[1]) ? { costItem: values(steam)[1], usageLabel: values(steam)[1], usageUnit: 't', actualUsage: row.steamUsage, targetUsage: steamTarget, impact: (steamTarget - row.steamUsage) * rate(steam) / 1000000 } : null,
+          ].filter(Boolean).map((item) => ({ ...item, timestamp: row.timestamp, period: operationMonth(row.timestamp) }));
         }).filter((row) => !filters.costItem || row.costItem === filters.costItem);
         const groups = new Map();
         rows.forEach((row) => { const key = `${row.period}|${row.costItem}`; const previous = groups.get(key) || { period: row.period, costItem: row.costItem, usageLabel: row.usageLabel, usageUnit: row.usageUnit, actualProfitImpact: 0, baselineProfitImpact: 0, actualUsage: 0, targetUsage: 0, plannedUsage: 0, unit: 'M KRW' }; previous.actualProfitImpact += row.impact; previous.actualUsage += row.actualUsage; previous.targetUsage += row.targetUsage; previous.plannedUsage += row.targetUsage; groups.set(key, previous); });
@@ -221,9 +229,9 @@
       });
   }
   function getCostRecords(filters = {}) {
-    const key = JSON.stringify({ start: filters.start || '', end: filters.end || '', plant: filters.plant || '', process: filters.process || '', product: filters.product || '', costItem: filters.costItem || '' });
-    if (!costRecordCache.has(key)) costRecordCache.set(key, getCostRecordsUncached(filters));
-    return costRecordCache.get(key);
+    // Always read the current shared source so an updated observation is
+    // immediately reflected in every period summary and downstream view.
+    return getCostRecordsUncached(filters);
   }
   function summarizeCostRows(rows) {
     return rows.reduce((summary, row) => ({
