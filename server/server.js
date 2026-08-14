@@ -7,18 +7,18 @@ const { createCopilotService, fallbackNarrative } = require('./copilot-service')
 const { createNvidiaNarrativeGenerator } = require('./nvidia-narrative');
 
 const projectRoot = path.resolve(__dirname, '..');
-const defaultRelationships = ['steamM01', 'steamM02', 'steamM03', 'steamM04'].map((candidateMetricId) => ({ targetMetricId: 'qualityContent', candidateMetricId, direction: 'inverse', weight: 1 }));
+const defaultRelationships = ['steamM01', 'steamM02', 'steamM03', 'steamM04'].map((candidateMetricId) => ({ targetMetricId: 'qualityContent', candidateMetricId, direction: 'inverse' }));
 const mimeTypes = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 
 function createCopilotRuntime({ databasePath = path.join(__dirname, 'copilot.sqlite'), generateNarrative } = {}) {
   const source = loadCurrentFrontendData(projectRoot);
   const store = new CopilotStore(databasePath);
-  store.seed({ observations: source.dailyObservations, standards: source.standards });
+  store.seed({ observations: source.dailyObservations, standards: source.standards, relationships: defaultRelationships });
   const nvidiaGenerator = generateNarrative || createNvidiaNarrativeGenerator({ envFile: path.join(projectRoot, '.env') });
   const service = createCopilotService({
     store,
     definitions: source.metricDefinitions,
-    relationships: defaultRelationships,
+    relationships: (targetMetricId) => store.relationships(targetMetricId),
     generateNarrative: async (analysis) => {
       try { return await nvidiaGenerator(analysis) || fallbackNarrative(analysis); } catch { return fallbackNarrative(analysis); }
     },

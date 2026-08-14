@@ -4,6 +4,8 @@ const { createCopilotRuntime } = require('./server');
 const tools = [
   { name: 'analyze_copilot_period', description: 'Analyze a selected period and return data-based inspection priorities.', inputSchema: { type: 'object', properties: { start: { type: 'string' }, end: { type: 'string' }, targetMetricId: { type: 'string', default: 'qualityContent' } } } },
   { name: 'get_management_standards', description: 'Return the current management standards from the database.', inputSchema: { type: 'object', properties: {} } },
+  { name: 'get_relationships', description: 'Return configured variable relationships and optional weights.', inputSchema: { type: 'object', properties: { targetMetricId: { type: 'string' } } } },
+  { name: 'upsert_relationship', description: 'Add or update one variable relationship. weight is optional and must be a non-negative number.', inputSchema: { type: 'object', required: ['targetMetricId', 'candidateMetricId', 'direction'], properties: { targetMetricId: { type: 'string' }, candidateMetricId: { type: 'string' }, direction: { type: 'string', enum: ['inverse', 'increase'] }, weight: { type: 'number' } } } },
   { name: 'get_observations', description: 'Return stored operating data for an optional period.', inputSchema: { type: 'object', properties: { start: { type: 'string' }, end: { type: 'string' } } } },
   { name: 'upsert_observation', description: 'Add or replace one day of operating data. This changes the data version and refreshes subsequent analysis.', inputSchema: { type: 'object', required: ['period', 'metrics'], properties: { period: { type: 'string' }, metrics: { type: 'object' } } } },
   { name: 'delete_observation', description: 'Delete one operating-data day by period.', inputSchema: { type: 'object', required: ['period'], properties: { period: { type: 'string' } } } },
@@ -21,6 +23,8 @@ function createMcpHandler(runtime) {
     switch (message.params?.name) {
       case 'analyze_copilot_period': result = await runtime.service.analyze(args); break;
       case 'get_management_standards': result = runtime.store.standards(); break;
+      case 'get_relationships': result = runtime.store.relationships(args.targetMetricId); break;
+      case 'upsert_relationship': runtime.store.upsertRelationship(args); result = { versions: runtime.store.versions() }; break;
       case 'get_observations': result = runtime.store.observations(args); break;
       case 'upsert_observation': runtime.store.upsertObservation(args); result = { versions: runtime.store.versions() }; break;
       case 'delete_observation': result = { deleted: runtime.store.deleteObservation(args.period), versions: runtime.store.versions() }; break;
