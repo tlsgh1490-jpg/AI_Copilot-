@@ -61,9 +61,21 @@ class CopilotStore {
     this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'data_version'").run();
   }
 
+  deleteObservation(period) {
+    const result = this.database.prepare('DELETE FROM observations WHERE period = ?').run(period);
+    if (result.changes) this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'data_version'").run();
+    return result.changes > 0;
+  }
+
   upsertStandard(standard) {
     this.database.prepare('INSERT INTO standards (metric_id, standard_json) VALUES (?, ?) ON CONFLICT(metric_id) DO UPDATE SET standard_json = excluded.standard_json').run(standard.metricId, JSON.stringify(standard));
     this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'standards_version'").run();
+  }
+
+  deleteStandard(metricId) {
+    const result = this.database.prepare('DELETE FROM standards WHERE metric_id = ?').run(metricId);
+    if (result.changes) this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'standards_version'").run();
+    return result.changes > 0;
   }
 
   getCached(cacheKey, versions) {

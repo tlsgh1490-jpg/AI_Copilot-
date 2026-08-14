@@ -29,6 +29,9 @@ test('keeps a generated narrative until data or standards change', () => {
     const beforeStandardChange = store.versions().standards_version;
     store.upsertStandard({ metricId: 'qualityContent', normalMax: 0.71, warningMax: 0.72 });
     assert.equal(store.versions().standards_version, beforeStandardChange + 1);
+
+    store.deleteObservation('2026-01-02');
+    assert.equal(store.observations().length, 1);
   } finally {
     store?.close();
     fs.rmSync(directory, { recursive: true, force: true });

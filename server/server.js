@@ -59,12 +59,24 @@ function createApplication(options = {}) {
         response.end(JSON.stringify({ versions: store.versions() }));
         return;
       }
+      if (request.method === 'DELETE' && url.pathname.startsWith('/api/observations/')) {
+        const period = decodeURIComponent(url.pathname.slice('/api/observations/'.length));
+        response.writeHead(store.deleteObservation(period) ? 200 : 404, { 'Content-Type': 'application/json; charset=utf-8' });
+        response.end(JSON.stringify({ versions: store.versions() }));
+        return;
+      }
       if (request.method === 'PUT' && url.pathname.startsWith('/api/standards/')) {
         const standard = await readJson(request);
         const metricId = decodeURIComponent(url.pathname.slice('/api/standards/'.length));
         if (!metricId || standard.metricId !== metricId) throw new Error('metricId is required');
         store.upsertStandard(standard);
         response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        response.end(JSON.stringify({ versions: store.versions() }));
+        return;
+      }
+      if (request.method === 'DELETE' && url.pathname.startsWith('/api/standards/')) {
+        const metricId = decodeURIComponent(url.pathname.slice('/api/standards/'.length));
+        response.writeHead(store.deleteStandard(metricId) ? 200 : 404, { 'Content-Type': 'application/json; charset=utf-8' });
         response.end(JSON.stringify({ versions: store.versions() }));
         return;
       }
