@@ -1274,4 +1274,17 @@ async function syncManagementStandardsFromServer() {
   }
 }
 syncManagementStandardsFromServer();
+async function syncOperatingDataFromServer() {
+  try {
+    const response = await fetch('/api/observations');
+    if (!response.ok) return;
+    const observations = await response.json();
+    if (!observations.length) return;
+    window.CogMockData.dailyObservations = observations;
+    refreshDataDrivenViews({});
+  } catch (_) {
+    // 기존 정적 화면으로 열었을 때는 현재 운영 데이터를 그대로 사용한다.
+  }
+}
+syncOperatingDataFromServer();
 document.querySelectorAll('.synthetic').forEach((element) => element.remove());
