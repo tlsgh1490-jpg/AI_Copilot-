@@ -21,7 +21,12 @@ function createCopilotRuntime({ databasePath = path.join(__dirname, 'copilot.sql
     definitions: source.metricDefinitions,
     relationships: (targetMetricId) => store.relationships(targetMetricId),
     generateNarrative: async (analysis) => {
-      try { return await nvidiaGenerator(analysis, { timeoutMs: narrativeTimeoutMs }) || fallbackNarrative(analysis); } catch { return fallbackNarrative(analysis); }
+      try {
+        const narrative = await nvidiaGenerator(analysis, { timeoutMs: narrativeTimeoutMs });
+        return narrative ? { text: narrative, source: 'nvidia' } : { text: fallbackNarrative(analysis), source: 'calculation' };
+      } catch {
+        return { text: fallbackNarrative(analysis), source: 'calculation' };
+      }
     },
   });
   return { store, service };

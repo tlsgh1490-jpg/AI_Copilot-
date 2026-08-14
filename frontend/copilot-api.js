@@ -22,7 +22,8 @@
       const candidateList = candidates.length
         ? `<ol>${candidates.slice(0, 3).map((item) => `<li>${escapeHtml(item.label)}: ${escapeHtml(item.reason)} · 상관계수 ${escapeHtml(item.correlation)}</li>`).join('')}</ol>`
         : `<p>${escapeHtml(analysis.limitation)}</p>`;
-      issue.innerHTML = `<h3>주요 핵심 이슈</h3><p>${escapeHtml(analysis.target.label)} 최신값 ${escapeHtml(analysis.target.value)}${escapeHtml(analysis.target.unit)} · 상태 ${escapeHtml(analysis.status)}</p><div class="inline-standard"><span>현재값 <b>${escapeHtml(analysis.target.value)}${escapeHtml(analysis.target.unit)}</b></span><span>기준 대비 <b class="red-text">${escapeHtml(analysis.target.variance ?? '-')}</b></span></div><h3>Copilot 분석</h3><p>${escapeHtml(result.narrative)}</p><p class="disclaimer">데이터 기반 점검 우선순위이며 확정 원인이 아닙니다.</p>`;
+      const narrativeLabel = result.narrativeSource === 'nvidia' ? 'AI 설명' : '계산 기반 설명';
+      issue.innerHTML = `<h3>주요 핵심 이슈</h3><p>${escapeHtml(analysis.target.label)} 최신값 ${escapeHtml(analysis.target.value)}${escapeHtml(analysis.target.unit)} · 상태 ${escapeHtml(analysis.status)}</p><div class="inline-standard"><span>현재값 <b>${escapeHtml(analysis.target.value)}${escapeHtml(analysis.target.unit)}</b></span><span>기준 대비 <b class="red-text">${escapeHtml(analysis.target.variance ?? '-')}</b></span></div><h3>${narrativeLabel}</h3><p>${escapeHtml(result.narrative)}</p><p class="disclaimer">데이터 기반 점검 우선순위이며 확정 원인이 아닙니다.</p>`;
       evidence.innerHTML = `<h3>점검 우선순위</h3>${candidateList}<h3>분석 기준</h3><p>조회 기간의 관리기준, 변화량, 설정된 변수 관계와 실제 상관계수를 함께 사용했습니다.${result.cached ? ' 동일 조건의 기존 분석을 재사용했습니다.' : ''}</p>`;
     } catch (_) {
       // Static file로 열었을 때는 기존 화면 문구를 그대로 유지한다.

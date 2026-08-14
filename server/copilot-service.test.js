@@ -25,6 +25,7 @@ test('uses the cached explanation for the same period and data version', async (
   const first = await service.analyze({ start: '2026-01-01', end: '2026-01-02', targetMetricId: 'qualityContent' });
   const second = await service.analyze({ start: '2026-01-01', end: '2026-01-02', targetMetricId: 'qualityContent' });
   assert.equal(first.narrative, '생성된 설명');
+  assert.equal(first.narrativeSource, 'generated');
   assert.equal(second.cached, true);
   assert.equal(calls, 1);
 });

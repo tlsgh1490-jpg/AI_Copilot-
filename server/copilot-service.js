@@ -20,8 +20,10 @@ function createCopilotService({ store, definitions, relationships, generateNarra
       targetMetricId,
       relationships: typeof relationships === 'function' ? relationships(targetMetricId) : relationships,
     });
-    const narrative = await generateNarrative(analysis);
-    const result = { analysis, narrative, cached: false, versions };
+    const generated = await generateNarrative(analysis);
+    const narrative = typeof generated === 'string' ? generated : generated.text;
+    const narrativeSource = typeof generated === 'string' ? 'generated' : generated.source;
+    const result = { analysis, narrative, narrativeSource, cached: false, versions };
     store.putCached(cacheKey, versions, result);
     return result;
   }
