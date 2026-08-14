@@ -9,6 +9,17 @@ function statusFor(value, standard) {
   return abnormal ? 'abnormal' : warning ? 'warning' : 'normal';
 }
 
+function pearson(xs, ys) {
+  if (xs.length < 2 || xs.length !== ys.length) return null;
+  const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
+  const xMean = mean(xs);
+  const yMean = mean(ys);
+  const numerator = xs.reduce((sum, value, index) => sum + (value - xMean) * (ys[index] - yMean), 0);
+  const xSize = Math.sqrt(xs.reduce((sum, value) => sum + (value - xMean) ** 2, 0));
+  const ySize = Math.sqrt(ys.reduce((sum, value) => sum + (value - yMean) ** 2, 0));
+  return xSize && ySize ? +(numerator / (xSize * ySize)).toFixed(3) : null;
+}
+
 function analyzePeriod({ observations, standards, definitions, targetMetricId, relationships }) {
   const target = definitions.find((item) => item.id === targetMetricId);
   const latest = observations.at(-1);
@@ -18,23 +29,28 @@ function analyzePeriod({ observations, standards, definitions, targetMetricId, r
   const candidates = relationships
     .filter((item) => item.targetMetricId === targetMetricId)
     .map((relationship) => {
-      const values = observations.map((row) => row.metrics[relationship.candidateMetricId]).filter(Number.isFinite);
-      if (values.length < 2) return null;
+      const pairs = observations.map((row) => [row.metrics[targetMetricId], row.metrics[relationship.candidateMetricId]]).filter(([targetValue, candidateValue]) => Number.isFinite(targetValue) && Number.isFinite(candidateValue));
+      if (pairs.length < 2) return null;
+      const targetValues = pairs.map(([targetValue]) => targetValue);
+      const values = pairs.map(([, candidateValue]) => candidateValue);
       const previous = values.at(-2);
       const current = values.at(-1);
       const change = current - previous;
       const baseline = Math.max(Math.abs(previous), 0.000001);
       const relativeChange = Math.abs(change) / baseline;
       if (relativeChange < 0.01) return null;
+      const correlation = pearson(targetValues, values);
+      if (correlation == null) return null;
       const definition = definitions.find((item) => item.id === relationship.candidateMetricId) || { label: relationship.candidateMetricId, unit: '' };
-      const aligned = relationship.direction === 'inverse' ? change < 0 : relationship.direction === 'increase' ? change > 0 : true;
+      const aligned = relationship.direction === 'inverse' ? correlation < 0 : relationship.direction === 'increase' ? correlation > 0 : true;
       if (!aligned) return null;
       return {
         metricId: relationship.candidateMetricId,
         label: definition.label,
         unit: definition.unit || '',
         change,
-        score: +(relativeChange * (relationship.weight || 1)).toFixed(4),
+        correlation,
+        score: +(relativeChange * Math.abs(correlation) * (relationship.weight || 1)).toFixed(4),
         reason: `${definition.label} ${change < 0 ? '감소' : '증가'} (${change.toFixed(3)}${definition.unit || ''})`,
       };
     })

@@ -4,3 +4,5 @@ __pycache__/
 *.inspect.ndjson
 tmp/
 test-results/
+.env
+server/*.sqlite

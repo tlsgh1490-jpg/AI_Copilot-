@@ -21,6 +21,7 @@ test('ranks the variable with the strongest aligned change as the check candidat
 
   assert.equal(result.status, 'abnormal');
   assert.equal(result.candidates[0].metricId, 'steamM01');
+  assert.ok(result.candidates[0].correlation < -0.9);
   assert.match(result.candidates[0].reason, /감소/);
 });
 
