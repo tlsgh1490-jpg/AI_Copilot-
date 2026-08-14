@@ -6,7 +6,7 @@
 node server/server.js
 ```
 
-그 뒤 `http://localhost:3000`으로 접속한다. `.env`에는 `NVIDIA_API_KEY`, `NVIDIA_MODEL`을 넣는다. 키나 생성된 SQLite DB는 Git에 포함되지 않는다.
+그 뒤 `http://localhost:3000`으로 접속한다. `.env`에는 `NVIDIA_API_KEY`를 넣는다. 기본 선정 모델은 `meta/llama-3.3-70b-instruct`이다. 키나 생성된 SQLite DB는 Git에 포함되지 않는다.
 
 MCP 도구 서버 실행 명령:
 
