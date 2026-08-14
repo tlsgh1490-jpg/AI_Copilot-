@@ -1,5 +1,8 @@
-function activeStandard(standards, metricId) {
-  return standards.filter((item) => item.metricId === metricId).at(-1) || null;
+function activeStandard(standards, metricId, asOf) {
+  return standards
+    .filter((item) => item.metricId === metricId && (!item.effectiveFrom || item.effectiveFrom <= asOf))
+    .sort((a, b) => (a.effectiveFrom || '').localeCompare(b.effectiveFrom || ''))
+    .at(-1) || null;
 }
 
 function statusFor(value, standard) {
@@ -24,7 +27,7 @@ function analyzePeriod({ observations, standards, definitions, targetMetricId, r
   const target = definitions.find((item) => item.id === targetMetricId);
   const latest = observations.at(-1);
   if (!target || !latest) return { status: 'unknown', candidates: [], limitation: '조회 기간에 분석할 데이터가 없습니다.' };
-  const standard = activeStandard(standards, targetMetricId);
+  const standard = activeStandard(standards, targetMetricId, latest.period);
   const value = latest.metrics[targetMetricId];
   const candidates = relationships
     .filter((item) => item.targetMetricId === targetMetricId)

@@ -30,6 +30,9 @@ test('keeps a generated narrative until data or standards change', () => {
     store.upsertStandard({ metricId: 'qualityContent', normalMax: 0.71, warningMax: 0.72 });
     assert.equal(store.versions().standards_version, beforeStandardChange + 1);
 
+    store.upsertStandard({ metricId: 'qualityContent', effectiveFrom: '2027-01-01', normalMax: 0.70, warningMax: 0.71 });
+    assert.equal(store.standards().filter((item) => item.metricId === 'qualityContent').length, 2);
+
     store.deleteObservation('2026-01-02');
     assert.equal(store.observations().length, 1);
   } finally {

@@ -37,3 +37,17 @@ test('does not invent a candidate when no configured relationship has changed', 
   assert.equal(result.candidates.length, 0);
   assert.match(result.limitation, /특정하기 어렵/);
 });
+
+test('uses the management standard effective on the latest analysis date', () => {
+  const result = analyzePeriod({
+    observations: [{ period: '2026-01-01', metrics: { qualityContent: 0.73 } }],
+    standards: [
+      { metricId: 'qualityContent', effectiveFrom: '2026-01-01', normalMax: 0.72, warningMax: 0.725 },
+      { metricId: 'qualityContent', effectiveFrom: '2025-01-01', normalMax: 0.75, warningMax: 0.76 },
+    ],
+    definitions: [{ id: 'qualityContent', label: '품질함량', unit: '%' }],
+    targetMetricId: 'qualityContent', relationships: [],
+  });
+  assert.equal(result.status, 'abnormal');
+  assert.equal(result.standard.effectiveFrom, '2026-01-01');
+});

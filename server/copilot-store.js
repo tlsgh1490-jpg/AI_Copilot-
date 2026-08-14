@@ -12,6 +12,12 @@ class CopilotStore {
         metric_id TEXT PRIMARY KEY,
         standard_json TEXT NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS standard_versions (
+        metric_id TEXT NOT NULL,
+        effective_from TEXT NOT NULL,
+        standard_json TEXT NOT NULL,
+        PRIMARY KEY (metric_id, effective_from)
+      );
       CREATE TABLE IF NOT EXISTS metadata (
         key TEXT PRIMARY KEY,
         value INTEGER NOT NULL
@@ -27,14 +33,15 @@ class CopilotStore {
   }
 
   seed({ observations, standards }) {
-    const count = this.database.prepare('SELECT COUNT(*) AS count FROM observations').get().count;
-    if (count) return;
+    const observationCount = this.database.prepare('SELECT COUNT(*) AS count FROM observations').get().count;
+    const standardCount = this.database.prepare('SELECT COUNT(*) AS count FROM standard_versions').get().count;
+    if (observationCount && standardCount) return;
     const observationStatement = this.database.prepare('INSERT INTO observations (period, metrics_json) VALUES (?, ?)');
-    const standardStatement = this.database.prepare('INSERT INTO standards (metric_id, standard_json) VALUES (?, ?)');
+    const standardStatement = this.database.prepare('INSERT INTO standard_versions (metric_id, effective_from, standard_json) VALUES (?, ?, ?)');
     this.database.exec('BEGIN');
     try {
-      observations.forEach((item) => observationStatement.run(item.period, JSON.stringify(item.metrics)));
-      standards.forEach((item) => standardStatement.run(item.metricId, JSON.stringify(item)));
+      if (!observationCount) observations.forEach((item) => observationStatement.run(item.period, JSON.stringify(item.metrics)));
+      if (!standardCount) standards.forEach((item) => standardStatement.run(item.metricId, item.effectiveFrom || '0000-01-01', JSON.stringify({ ...item, effectiveFrom: item.effectiveFrom || '0000-01-01' })));
       this.database.exec('COMMIT');
     } catch (error) {
       this.database.exec('ROLLBACK');
@@ -53,7 +60,7 @@ class CopilotStore {
   }
 
   standards() {
-    return this.database.prepare('SELECT standard_json FROM standards ORDER BY metric_id').all().map((item) => JSON.parse(item.standard_json));
+    return this.database.prepare('SELECT standard_json FROM standard_versions ORDER BY metric_id, effective_from').all().map((item) => JSON.parse(item.standard_json));
   }
 
   upsertObservation(observation) {
@@ -72,12 +79,13 @@ class CopilotStore {
   upsertStandard(standard) {
     if (!standard.metricId || typeof standard.metricId !== 'string') throw new Error('metricId is required');
     if (!['normalMin', 'normalMax', 'warningMin', 'warningMax', 'target'].every((key) => standard[key] == null || Number.isFinite(standard[key]))) throw new Error('standard thresholds must be finite numbers');
-    this.database.prepare('INSERT INTO standards (metric_id, standard_json) VALUES (?, ?) ON CONFLICT(metric_id) DO UPDATE SET standard_json = excluded.standard_json').run(standard.metricId, JSON.stringify(standard));
+    const normalized = { ...standard, effectiveFrom: standard.effectiveFrom || '0000-01-01' };
+    this.database.prepare('INSERT INTO standard_versions (metric_id, effective_from, standard_json) VALUES (?, ?, ?) ON CONFLICT(metric_id, effective_from) DO UPDATE SET standard_json = excluded.standard_json').run(normalized.metricId, normalized.effectiveFrom, JSON.stringify(normalized));
     this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'standards_version'").run();
   }
 
   deleteStandard(metricId) {
-    const result = this.database.prepare('DELETE FROM standards WHERE metric_id = ?').run(metricId);
+    const result = this.database.prepare('DELETE FROM standard_versions WHERE metric_id = ?').run(metricId);
     if (result.changes) this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'standards_version'").run();
     return result.changes > 0;
   }
