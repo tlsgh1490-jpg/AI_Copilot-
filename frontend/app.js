@@ -1246,13 +1246,32 @@ document.querySelector('#cost .profit-impact-detail .pill')?.remove();
 document.querySelector('#cost .impact-composition-card [data-profit-export]')?.addEventListener('click', exportProfitExcel);
 document.querySelector('#brief .page-head .filters')?.remove();
 
-function saveManagementStandard(form) {
+async function saveManagementStandard(form) {
   const metricLabel = form.querySelector('select')?.value;
   const definition = window.CogMockData.metricDefinitions.find((item) => item.label === metricLabel);
   const effectiveFrom = form.querySelector('input')?.value?.slice(0, 10).replaceAll('.', '-') || dataDrivenState.end;
   const current = window.CogDataService.getActiveStandard(definition.id, effectiveFrom);
-  window.CogMockData.standards.push({ ...current, metricId: definition.id, effectiveFrom });
+  const nextStandard = { ...current, metricId: definition.id, effectiveFrom };
+  try {
+    const response = await fetch(`/api/standards/${encodeURIComponent(definition.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nextStandard) });
+    if (!response.ok) throw new Error('standard save failed');
+    const standards = await fetch('/api/standards').then((item) => item.json());
+    window.CogMockData.standards = standards;
+  } catch (_) {
+    window.CogMockData.standards.push(nextStandard);
+  }
   renderStandardsFromData(); refreshDataDrivenViews({});
 }
-document.querySelector('#standard-modal form')?.addEventListener('submit', (event) => { event.preventDefault(); saveManagementStandard(event.currentTarget); document.querySelector('#standard-modal').close(); });
+document.querySelector('#standard-modal form')?.addEventListener('submit', async (event) => { event.preventDefault(); await saveManagementStandard(event.currentTarget); document.querySelector('#standard-modal').close(); });
+async function syncManagementStandardsFromServer() {
+  try {
+    const response = await fetch('/api/standards');
+    if (!response.ok) return;
+    window.CogMockData.standards = await response.json();
+    renderStandardsFromData(); refreshDataDrivenViews({});
+  } catch (_) {
+    // 기존 정적 화면으로 열었을 때는 현재 기준 데이터를 그대로 사용한다.
+  }
+}
+syncManagementStandardsFromServer();
 document.querySelectorAll('.synthetic').forEach((element) => element.remove());
