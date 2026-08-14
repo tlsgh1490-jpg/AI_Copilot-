@@ -22,6 +22,7 @@ function createNvidiaNarrativeGenerator({ envFile }) {
     ].join('\n');
     const response = await fetch(`${baseUrl.replace(/\/$/, '')}/chat/completions`, {
       method: 'POST',
+      signal: AbortSignal.timeout(Number(settings.NVIDIA_TIMEOUT_MS || 90000)),
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: 0.2, max_tokens: 250 }),
     });
