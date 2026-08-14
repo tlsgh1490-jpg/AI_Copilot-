@@ -51,6 +51,11 @@ function createApplication(options = {}) {
         response.end(JSON.stringify(store.standards()));
         return;
       }
+      if (request.method === 'GET' && url.pathname === '/api/observations') {
+        response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        response.end(JSON.stringify(store.observations({ start: url.searchParams.get('start'), end: url.searchParams.get('end') })));
+        return;
+      }
       if (request.method === 'POST' && url.pathname === '/api/observations') {
         const observation = await readJson(request);
         if (!/^\d{4}-\d{2}-\d{2}$/.test(observation.period || '') || !observation.metrics || typeof observation.metrics !== 'object') throw new Error('period and metrics are required');

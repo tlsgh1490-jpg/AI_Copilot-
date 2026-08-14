@@ -21,3 +21,17 @@ test('returns calculated Copilot analysis through the API without requiring an L
     await new Promise((resolve) => app.close(resolve));
   }
 });
+
+test('accepts operating-data input and exposes it through the API', async () => {
+  const app = createApplication({ generateNarrative: async () => '테스트 설명', databasePath: ':memory:' });
+  await new Promise((resolve) => app.listen(0, '127.0.0.1', resolve));
+  try {
+    const { port } = app.address();
+    const response = await fetch(`http://127.0.0.1:${port}/api/observations`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ period: '2026-12-31', metrics: { qualityContent: 0.71 } }) });
+    assert.equal(response.status, 201);
+    const observations = await (await fetch(`http://127.0.0.1:${port}/api/observations?start=2026-12-31&end=2026-12-31`)).json();
+    assert.equal(observations[0].period, '2026-12-31');
+  } finally {
+    await new Promise((resolve) => app.close(resolve));
+  }
+});
