@@ -13,7 +13,7 @@ function createNvidiaNarrativeGenerator({ envFile }) {
   const key = settings.NVIDIA_API_KEY;
   const model = settings.NVIDIA_MODEL;
   const baseUrl = settings.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1';
-  return async (analysis) => {
+  return async (analysis, { timeoutMs } = {}) => {
     if (!key || !model) return null;
     const prompt = [
       '당신은 제조 공정 Copilot입니다. 아래 계산 결과만 근거로 한국어 2~3문장으로 요약하세요.',
@@ -22,7 +22,7 @@ function createNvidiaNarrativeGenerator({ envFile }) {
     ].join('\n');
     const response = await fetch(`${baseUrl.replace(/\/$/, '')}/chat/completions`, {
       method: 'POST',
-      signal: AbortSignal.timeout(Number(settings.NVIDIA_TIMEOUT_MS || 90000)),
+      signal: AbortSignal.timeout(Number(timeoutMs || settings.NVIDIA_TIMEOUT_MS || 90000)),
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: 0.2, max_tokens: 250 }),
     });

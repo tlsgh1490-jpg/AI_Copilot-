@@ -9,6 +9,7 @@ const { createNvidiaNarrativeGenerator } = require('./nvidia-narrative');
 const projectRoot = path.resolve(__dirname, '..');
 const defaultRelationships = ['steamM01', 'steamM02', 'steamM03', 'steamM04'].map((candidateMetricId) => ({ targetMetricId: 'qualityContent', candidateMetricId, direction: 'inverse' }));
 const mimeTypes = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8' };
+const narrativeTimeoutMs = Number(process.env.COPILOT_NARRATIVE_TIMEOUT_MS || 20000);
 
 function createCopilotRuntime({ databasePath = path.join(__dirname, 'copilot.sqlite'), generateNarrative } = {}) {
   const source = loadCurrentFrontendData(projectRoot);
@@ -20,7 +21,7 @@ function createCopilotRuntime({ databasePath = path.join(__dirname, 'copilot.sql
     definitions: source.metricDefinitions,
     relationships: (targetMetricId) => store.relationships(targetMetricId),
     generateNarrative: async (analysis) => {
-      try { return await nvidiaGenerator(analysis) || fallbackNarrative(analysis); } catch { return fallbackNarrative(analysis); }
+      try { return await nvidiaGenerator(analysis, { timeoutMs: narrativeTimeoutMs }) || fallbackNarrative(analysis); } catch { return fallbackNarrative(analysis); }
     },
   });
   return { store, service };
