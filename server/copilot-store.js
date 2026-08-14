@@ -57,6 +57,8 @@ class CopilotStore {
   }
 
   upsertObservation(observation) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(observation.period || '') || !observation.metrics || typeof observation.metrics !== 'object') throw new Error('period and metrics are required');
+    if (!Object.values(observation.metrics).every(Number.isFinite)) throw new Error('each metric must be a finite number');
     this.database.prepare('INSERT INTO observations (period, metrics_json) VALUES (?, ?) ON CONFLICT(period) DO UPDATE SET metrics_json = excluded.metrics_json').run(observation.period, JSON.stringify(observation.metrics));
     this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'data_version'").run();
   }
@@ -68,6 +70,8 @@ class CopilotStore {
   }
 
   upsertStandard(standard) {
+    if (!standard.metricId || typeof standard.metricId !== 'string') throw new Error('metricId is required');
+    if (!['normalMin', 'normalMax', 'warningMin', 'warningMax', 'target'].every((key) => standard[key] == null || Number.isFinite(standard[key]))) throw new Error('standard thresholds must be finite numbers');
     this.database.prepare('INSERT INTO standards (metric_id, standard_json) VALUES (?, ?) ON CONFLICT(metric_id) DO UPDATE SET standard_json = excluded.standard_json').run(standard.metricId, JSON.stringify(standard));
     this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'standards_version'").run();
   }

@@ -37,3 +37,14 @@ test('keeps a generated narrative until data or standards change', () => {
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('rejects non-numeric operating values before they reach the database', () => {
+  const { directory, databasePath } = temporaryDatabase();
+  const store = new CopilotStore(databasePath);
+  try {
+    assert.throws(() => store.upsertObservation({ period: '2026-01-01', metrics: { qualityContent: 'bad' } }), /finite number/);
+  } finally {
+    store.close();
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
