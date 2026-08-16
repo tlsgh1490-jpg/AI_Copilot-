@@ -10,7 +10,7 @@ node server/server.js
 
 ```dotenv
 NVIDIA_API_KEY=...
-NVIDIA_MODEL=meta/llama-3.3-70b-instruct
+NVIDIA_MODEL=meta/llama-3.1-8b-instruct
 # 선택: NVIDIA_TIMEOUT_MS=90000
 # 선택: COPILOT_NARRATIVE_TIMEOUT_MS=20000
 ```

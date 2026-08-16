@@ -7,8 +7,13 @@ function stripMarkdownFence(value) {
 function parseBriefJson(text) {
   try {
     const parsed = JSON.parse(stripMarkdownFence(text));
-    if (!parsed || typeof parsed !== 'object' || !requiredKeys.every((key) => typeof parsed[key] === 'string' && parsed[key].trim())) return null;
-    return Object.fromEntries(requiredKeys.map((key) => [key, parsed[key].trim()]));
+    if (!parsed || typeof parsed !== 'object') return null;
+    const normalized = Object.fromEntries(requiredKeys.map((key) => {
+      const value = parsed[key];
+      const textValue = Array.isArray(value) ? value.filter((item) => typeof item === 'string' && item.trim()).join(', ') : value;
+      return [key, typeof textValue === 'string' ? textValue.trim() : null];
+    }));
+    return requiredKeys.every((key) => normalized[key]) ? normalized : null;
   } catch {
     return null;
   }

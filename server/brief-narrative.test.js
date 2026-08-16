@@ -17,6 +17,11 @@ test('rejects incomplete or non-JSON Brief text', () => {
   assert.equal(parseBriefJson('{"예상원인":"확인 필요"}'), null);
 });
 
+test('normalizes an affected-KPI list returned by the model', () => {
+  const result = parseBriefJson('{"예상원인":"점검 후보","영향KPI":["품질함량","스팀 사용량"],"점검우선순위":"현장 확인","brief_summary":"[이상] 점검"}');
+  assert.equal(result.영향KPI, '품질함량, 스팀 사용량');
+});
+
 test('builds a non-conclusive calculation fallback from actual candidates', () => {
   const brief = fallbackBrief({
     status: 'abnormal',
