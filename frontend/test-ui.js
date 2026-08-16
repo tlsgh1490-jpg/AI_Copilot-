@@ -72,6 +72,7 @@ assert.ok(app.includes('kpi-card-detail'), 'All KPI status cards need non-overla
 assert.ok(app.includes('standardUsageAnalysisData'), 'Standard comparison needs usage and savings deltas');
 assert.ok(app.includes('profit-item-charts'), 'Profit impact needs a separate monthly chart per cost item');
 assert.ok(app.includes('analysis-mode-tabs'), 'Period comparison and standard comparison need a shared analysis mode control');
+assert.ok(!app.includes("analysisTabs.querySelector('[data-analysis-mode=\"standard\"]')?.remove()"), 'Process analysis must keep the management-standard comparison tab visible');
 assert.ok(app.includes('kpi-status-summary-grid'), 'KPI summaries must use a dense status-group layout');
 assert.ok(app.includes('profit-item-chart'), 'Profit impact must retain separate readable item charts');
 assert.ok(app.includes('period-profit-summary'), 'Operations overview needs a compact non-empty profit summary');

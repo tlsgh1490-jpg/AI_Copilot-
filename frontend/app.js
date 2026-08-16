@@ -265,7 +265,6 @@ if (processResult) {
   const analysisTabs = document.createElement('div');
   analysisTabs.className = 'analysis-mode-tabs';
   analysisTabs.innerHTML = '<button class=\"selected\" data-analysis-mode=\"period\">\uae30\uac04 \ube44\uad50 \ubd84\uc11d</button><button data-analysis-mode=\"standard\">\uad00\ub9ac\uae30\uc900 \ub300\ube44 \ubd84\uc11d</button>';
-  analysisTabs.querySelector('[data-analysis-mode="standard"]')?.remove();
   resultTitle.appendChild(analysisTabs);
   standardResult.hidden = true;
   analysisTabs.querySelectorAll('button').forEach((button) => button.addEventListener('click', () => {
