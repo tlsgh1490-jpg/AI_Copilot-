@@ -23,12 +23,11 @@ for _,r in std.iterrows():
         streak=streak+1 if st==prev else 1
         confirmed.append(st if ((st=='이상' and streak>=2) or (st=='주의' and streak>=2)) else '정상')
         prev=st
-    for i,(_,day) in enumerate(d.iterrows()): rows.append({'조업일':day['operation_date'],'KPI_ID':key,'관리항목':name,'실적값':round(float(day[key]),4),'원판정':raw[i],'연속판정':confirmed[i],'연속기준':'2일 연속'})
+    for i,(_,day) in enumerate(d.iterrows()): rows.append({'조업일':day['operation_date'],'KPI_ID':key,'관리항목':name,'실적값':round(float(day[key]),4),'판정':raw[i],'연속판정':confirmed[i],'연속기준':'2일 연속'})
 
+# 이 정적 파일은 기존 화면 호환용이다. 실제 원인 후보와 Brief는 서버가 조회 기간의 데이터로 계산한다.
 event_rows=[]
-scenario_info={'SCN_EX02':('휘발분 저하','A/B 생산량·원단위 저하','휘발분과 생산량을 우선 점검'),'SCN_EX03':('스팀 M05/M06 저하','B 생산량·원단위 저하','스팀 M05/M06과 B 라인 확인'),'SCN_EX06':('가스 출구온도 상승','품질함량 상승','출구온도·설비 차압 확인'),'SCN_EX07':('스팀 M01~M04 저하','품질함량 상승','스팀 M01~M04와 열교환 상태 확인')}
 for _,r in ev.iterrows():
-    info=scenario_info.get(r.iloc[1],('시나리오 영향','영향 KPI 확인','관련 선행변수 우선 점검'))
-    event_rows.append({'EVENT_ID':r.iloc[0],'SCENARIO_ID':r.iloc[1],'전조시작':r.iloc[2],'이상시작':r.iloc[3],'회복시작':r.iloc[4],'회복완료':r.iloc[5],'예상원인':info[0],'영향KPI':info[1],'점검우선순위':info[2],'판정문구':'합성 시나리오 기반 점검 후보이며 실제 원인 확정 아님'})
+    event_rows.append({'EVENT_ID':r.iloc[0],'SCENARIO_ID':r.iloc[1],'구간시작':r.iloc[2],'이상시작':r.iloc[3],'회복시작':r.iloc[4],'회복완료':r.iloc[5],'예상원인':'선택 기간의 실제 데이터와 변수 관계를 바탕으로 점검 후보를 분석합니다.','영향KPI':'조회 화면의 KPI 영향도를 확인합니다.','점검우선순위':'Copilot의 조회 기간 분석 결과를 우선 확인합니다.','판정문구':'이 항목은 시나리오 ID만으로 원인을 확정하지 않습니다.'})
 payload={'daily_status':rows,'event_analysis':event_rows,'rules':[['시간단위 변수','3시간 연속 이탈 시 확정'],['일별 KPI','2일 연속 이탈 시 확정'],['주의','연속 조건 충족 전 후보 상태'],['이상','연속 조건 충족 후 분석 이벤트 후보']]}
 out.write_text(json.dumps(payload,ensure_ascii=False,default=str),encoding='utf-8'); print('DAILY_STATUS_ROWS=',len(rows),'EVENT_ROWS=',len(event_rows))
