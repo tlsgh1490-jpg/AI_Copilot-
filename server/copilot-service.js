@@ -1,13 +1,11 @@
 const { analyzePeriod } = require('./copilot-analysis');
+const { fallbackBrief, parseBriefJson } = require('./brief-narrative');
 
 function fallbackNarrative(analysis) {
-  if (analysis.status === 'normal') return '선택 기간의 최신 값은 현재 관리기준 안에 있습니다. 계속 추이를 확인하세요.';
-  if (!analysis.candidates.length) return `${analysis.limitation} 관리기준 이탈 여부와 원본 데이터를 우선 확인하세요.`;
-  const names = analysis.candidates.slice(0, 2).map((item) => item.label).join(', ');
-  return `관리기준 이탈이 확인되었습니다. ${names}을(를) 우선 점검 후보로 제시합니다. 이는 데이터 기반 점검 우선순위이며 확정 원인은 아닙니다.`;
+  return fallbackBrief(analysis).brief_summary;
 }
 
-function createCopilotService({ store, definitions, relationships, generateNarrative = async (analysis) => fallbackNarrative(analysis) }) {
+function createCopilotService({ store, definitions, relationships, generateNarrative = async () => null }) {
   async function analyze({ start, end, targetMetricId = 'qualityContent' }) {
     const versions = store.versions();
     const cacheKey = JSON.stringify({ start: start || null, end: end || null, targetMetricId });
@@ -20,10 +18,27 @@ function createCopilotService({ store, definitions, relationships, generateNarra
       targetMetricId,
       relationships: typeof relationships === 'function' ? relationships(targetMetricId) : relationships,
     });
-    const generated = await generateNarrative(analysis);
-    const narrative = typeof generated === 'string' ? generated : generated.text;
-    const narrativeSource = typeof generated === 'string' ? 'generated' : generated.source;
-    const result = { analysis, narrative, narrativeSource, cached: false, versions };
+    let brief = fallbackBrief(analysis);
+    let briefSource = 'calculation';
+    try {
+      const generated = await generateNarrative(analysis);
+      const parsed = generated?.brief || parseBriefJson(typeof generated === 'string' ? generated : generated?.text);
+      if (parsed) {
+        brief = parsed;
+        briefSource = generated?.source || 'nvidia';
+      }
+    } catch {
+      // The calculated Brief remains available when an external call fails.
+    }
+    const result = {
+      analysis,
+      brief,
+      briefSource,
+      narrative: brief.brief_summary,
+      narrativeSource: briefSource,
+      cached: false,
+      versions,
+    };
     store.putCached(cacheKey, versions, result);
     return result;
   }

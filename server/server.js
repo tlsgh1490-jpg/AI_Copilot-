@@ -3,7 +3,7 @@ const http = require('node:http');
 const path = require('node:path');
 const { CopilotStore } = require('./copilot-store');
 const { loadCurrentFrontendData } = require('./data-source');
-const { createCopilotService, fallbackNarrative } = require('./copilot-service');
+const { createCopilotService } = require('./copilot-service');
 const { createNvidiaNarrativeGenerator } = require('./nvidia-narrative');
 
 const projectRoot = path.resolve(__dirname, '..');
@@ -20,14 +20,7 @@ function createCopilotRuntime({ databasePath = path.join(__dirname, 'copilot.sql
     store,
     definitions: source.metricDefinitions,
     relationships: (targetMetricId) => store.relationships(targetMetricId),
-    generateNarrative: async (analysis) => {
-      try {
-        const narrative = await nvidiaGenerator(analysis, { timeoutMs: narrativeTimeoutMs });
-        return narrative ? { text: narrative, source: 'nvidia' } : { text: fallbackNarrative(analysis), source: 'calculation' };
-      } catch {
-        return { text: fallbackNarrative(analysis), source: 'calculation' };
-      }
-    },
+    generateNarrative: (analysis) => nvidiaGenerator(analysis, { timeoutMs: narrativeTimeoutMs }),
   });
   return { store, service };
 }

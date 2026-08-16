@@ -3,19 +3,24 @@ const http = require('node:http');
 const test = require('node:test');
 const { createApplication } = require('./server');
 
-test('returns calculated Copilot analysis through the API without requiring an LLM call', async () => {
-  const app = createApplication({ generateNarrative: async () => '테스트 설명', databasePath: ':memory:' });
+function getJson(port, endpoint) {
+  return new Promise((resolve, reject) => {
+    http.get(`http://127.0.0.1:${port}${endpoint}`, (response) => {
+      let text = '';
+      response.on('data', (chunk) => { text += chunk; });
+      response.on('end', () => resolve(JSON.parse(text)));
+    }).on('error', reject);
+  });
+}
+
+test('returns a validated Brief through the Copilot API', async () => {
+  const app = createApplication({ generateNarrative: async () => '{"예상원인":"점검 후보","영향KPI":"품질함량","점검우선순위":"현장 확인","brief_summary":"[이상] 점검"}', databasePath: ':memory:' });
   await new Promise((resolve) => app.listen(0, '127.0.0.1', resolve));
   try {
-    const { port } = app.address();
-    const body = await new Promise((resolve, reject) => {
-      http.get(`http://127.0.0.1:${port}/api/copilot?start=2025-09-08&end=2025-09-12`, (response) => {
-        let text = '';
-        response.on('data', (chunk) => { text += chunk; });
-        response.on('end', () => resolve(JSON.parse(text)));
-      }).on('error', reject);
-    });
-    assert.equal(body.narrative, '테스트 설명');
+    const body = await getJson(app.address().port, '/api/copilot?start=2025-09-08&end=2025-09-12');
+    assert.equal(body.narrative, '[이상] 점검');
+    assert.equal(body.briefSource, 'nvidia');
+    assert.equal(typeof body.brief.점검우선순위, 'string');
     assert.ok(body.analysis.target);
   } finally {
     await new Promise((resolve) => app.close(resolve));
@@ -23,7 +28,7 @@ test('returns calculated Copilot analysis through the API without requiring an L
 });
 
 test('accepts operating-data input and exposes it through the API', async () => {
-  const app = createApplication({ generateNarrative: async () => '테스트 설명', databasePath: ':memory:' });
+  const app = createApplication({ generateNarrative: async () => null, databasePath: ':memory:' });
   await new Promise((resolve) => app.listen(0, '127.0.0.1', resolve));
   try {
     const { port } = app.address();
