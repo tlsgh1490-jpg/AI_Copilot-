@@ -546,6 +546,9 @@ dataDrivenState.start = latestDataPeriod;
 dataDrivenState.end = latestDataPeriod;
 const processAnalysisState = { metricIds: ['qualityContent', 'steamUsage', 'gasOutletTemp'] };
 const formatMetricValue = (summary) => !summary?.hasData || !Number.isFinite(summary.value) ? '-' : `${summary.value.toLocaleString(undefined, { maximumFractionDigits: summary.decimals })}${summary.unit ? ` ${summary.unit}` : ''}`;
+const standardDisplayDigits = (summary) => ({ steamUsage: 1, qualityContent: 3, gasOutletTemp: 1 }[summary.id] ?? summary.decimals);
+const formatStandardValue = (value, summary) => !Number.isFinite(value) ? '-' : `${value.toLocaleString(undefined, { minimumFractionDigits: standardDisplayDigits(summary), maximumFractionDigits: standardDisplayDigits(summary) })}${summary.unit}`;
+const formatStandardVariance = (summary) => !Number.isFinite(summary.variance) ? '-' : `${summary.variance >= 0 ? '+' : ''}${summary.variance.toLocaleString(undefined, { minimumFractionDigits: standardDisplayDigits(summary), maximumFractionDigits: standardDisplayDigits(summary) })}${summary.unit}`;
 const statusClass = (status) => status === 'abnormal' ? 'danger' : status === 'warning' ? 'warning' : 'normal';
 const statusLabel = (status) => status === 'abnormal' ? '이상' : status === 'warning' ? '주의' : '정상';
 const kpiDetailState = { overview: false, brief: false, summaries: [] };
@@ -558,8 +561,8 @@ const trendSvg = (summary) => {
 const standardText = (summary) => {
   const { standard } = summary;
   if (!standard) return '-';
-  if (standard.normalMin !== undefined && standard.normalMax !== undefined) return `정상 ${standard.normalMin} ~ ${standard.normalMax}${summary.unit}`;
-  return `관리 상한 ${standard.normalMax}${summary.unit}`;
+  if (standard.normalMin !== undefined && standard.normalMax !== undefined) return `정상 ${formatStandardValue(standard.normalMin, summary)} ~ ${formatStandardValue(standard.normalMax, summary)}`;
+  return `관리 상한 ${formatStandardValue(standard.normalMax, summary)}`;
 };
 function renderKpiTables(summaries) {
   kpiDetailState.summaries = summaries;
@@ -1036,7 +1039,7 @@ function renderProcessStandardAnalysis() {
   const processInputs = [...document.querySelectorAll('#process input[data-period-input]')];
   const filters = processInputs.length >= 2 ? { start: processInputs[0].value, end: processInputs[1].value } : dataDrivenState;
   const summaries = window.CogDataService.getKpiSummaries(filters).filter((item) => processAnalysisState.metricIds.includes(item.id));
-  const rows = summaries.map((item) => `<tr><td><b>${item.label}</b></td><td>${formatMetricValue(item)}</td><td><b>${item.standard.effectiveFrom}</b></td><td>${standardText(item)}</td><td>${item.standard.warningMax !== undefined ? `상한 ${item.standard.warningMax}${item.unit}` : `하한 ${item.standard.warningMin}${item.unit}`}</td><td><span class="status ${statusClass(item.status)}">${statusLabel(item.status)}</span></td><td class="${item.status === 'abnormal' ? 'red-text' : item.status === 'warning' ? 'orange' : 'positive'}">${item.variance >= 0 ? '+' : ''}${item.variance}${item.unit}</td></tr>`).join('');
+  const rows = summaries.map((item) => `<tr><td><b>${item.label}</b></td><td>${formatMetricValue(item)}</td><td><b>${item.standard.effectiveFrom}</b></td><td>${standardText(item)}</td><td>${item.standard.warningMax !== undefined ? `상한 ${formatStandardValue(item.standard.warningMax, item)}` : `하한 ${formatStandardValue(item.standard.warningMin, item)}`}</td><td><span class="status ${statusClass(item.status)}">${statusLabel(item.status)}</span></td><td class="${item.status === 'abnormal' ? 'red-text' : item.status === 'warning' ? 'orange' : 'positive'}">${formatStandardVariance(item)}</td></tr>`).join('');
   const costRows = window.CogDataService.groupCostByItem(filters).map((row) => `<tr><td><b>${row.costItem}</b></td><td>${row.targetUsage.toLocaleString()}</td><td>${row.actualUsage.toLocaleString()}</td><td class="${row.actualUsage > row.targetUsage ? 'red-text' : 'positive'}">${(row.actualUsage - row.targetUsage).toFixed(1)}</td><td class="${row.variance >= 0 ? 'positive' : 'red-text'}">${row.variance >= 0 ? '+' : ''}${row.variance.toFixed(1)}백만원</td></tr>`).join('');
   target.innerHTML = `<div class="card-title"><div><h2>관리기준 대비 분석</h2><p>선택 기간 실적을 적용 시점별 관리기준과 비교합니다.</p></div></div><div class="standard-application"><b>기준 적용 안내</b><span>기준 변경일 이후의 실적에는 해당 버전을 적용하고, 과거 실적은 당시 기준으로 판정합니다.</span></div><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>지표</th><th>선택 기간 실적</th><th>적용 기준일</th><th>정상 범위</th><th>주의 기준</th><th>판정</th><th>기준 대비</th></tr></thead><tbody>${rows}</tbody></table></div><h3 class="usage-analysis-title">사용량·손익 기준 대비</h3><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>관리 항목</th><th>기준 사용량</th><th>선택 기간 실제</th><th>사용량 증감</th><th>기준 대비 손익 영향</th></tr></thead><tbody>${costRows}</tbody></table></div>`;
 }
