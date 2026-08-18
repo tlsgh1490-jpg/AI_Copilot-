@@ -353,8 +353,12 @@ if (processPage) {
   installPeriodMode(processOverview, overviewDateInputs);
   processOverview.querySelector('[data-process-query]').addEventListener('click', renderActualTable);
   processOverview.querySelector('[data-process-export]').addEventListener('click', () => {
-    const table = processOverview.querySelector('.process-data-table table');
-    const html = '<html><head><meta charset="UTF-8"></head><body>' + table.outerHTML + '</body></html>';
+    const filters = readPeriodRange(processOverview, [...processOverview.querySelectorAll('[data-period-input]')]);
+    const metricIds = [...processOverview.querySelectorAll('.metric-checks input:checked')].map((input) => input.value);
+    const definitions = metricIds.map((id) => window.CogMockData.metricDefinitions.find((definition) => definition.id === id));
+    const observations = window.CogDataService.getObservations(filters);
+    const rawTable = '<table><thead><tr><th>일자</th>' + definitions.map((definition) => '<th>' + definition.label + '</th>').join('') + '</tr><tr><th>단위</th>' + definitions.map((definition) => '<th>' + definition.unit + '</th>').join('') + '</tr></thead><tbody>' + observations.map((row) => '<tr><td>' + row.period + '</td>' + metricIds.map((id) => '<td>' + row.metrics[id] + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+    const html = '<html><head><meta charset="UTF-8"></head><body>' + rawTable + '</body></html>';
     const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([html], { type: 'application/vnd.ms-excel' })); link.download = '공정현황_조회결과.xls'; link.click(); URL.revokeObjectURL(link.href);
   });
   renderActualTable();

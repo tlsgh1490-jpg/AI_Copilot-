@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
 
@@ -482,6 +483,21 @@ test('process overview exports the selected actual-data table to Excel', async (
   const download = page.waitForEvent('download');
   await page.locator('#processOverview [data-process-export]').click();
   expect((await download).suggestedFilename()).toMatch(/공정현황_조회결과\.xls$/);
+});
+
+test('process overview Excel export retains raw decimal precision', async ({ page }) => {
+  await page.goto(appUrl);
+  await page.locator('.sidebar .subnav [data-view="processOverview"]').click();
+  const view = page.locator('#processOverview');
+  const inputs = view.locator('input[data-period-input]');
+  await inputs.nth(0).fill('2025-12-31');
+  await inputs.nth(1).fill('2025-12-31');
+  await view.locator('[data-process-query]').click();
+  const downloadPromise = page.waitForEvent('download');
+  await view.locator('[data-process-export]').click();
+  const download = await downloadPromise;
+  const html = fs.readFileSync(await download.path(), 'utf8');
+  expect(html).toContain('15.314326');
 });
 
 test('profit item charts expose daily/monthly controls and export from the item section', async ({ page }) => {
