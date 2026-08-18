@@ -6,6 +6,29 @@ const appUrl = pathToFileURL(path.resolve(__dirname, 'index.html')).href;
 
 test.use({ channel: 'chrome' });
 
+test('standard change modal cancels without saving and applies the entered limit on save', async ({ page }) => {
+  await page.goto(appUrl);
+  await page.locator('.sidebar [data-view="standards"]').click();
+  const modal = page.locator('#standard-modal');
+  const historyRows = page.locator('#standards .standards-grid .card').nth(1).locator('tbody tr');
+  const historyCount = await historyRows.count();
+
+  await page.locator('#standard-modal-button').click();
+  await modal.getByRole('button', { name: '취소' }).click();
+  await expect(modal).not.toBeVisible();
+  await expect(historyRows).toHaveCount(historyCount);
+
+  await page.locator('#standard-modal-button').click();
+  await modal.locator('select[name="metricId"]').selectOption('qualityContent');
+  await modal.locator('input[name="normalMax"]').fill('0.700');
+  await modal.locator('input[name="reason"]').fill('발표용 기준 확인');
+  await modal.getByRole('button', { name: '변경 저장' }).click();
+  await expect(modal).not.toBeVisible();
+  await expect(page.locator('#standards .standards-grid .card').first()).toContainText('상한 0.7');
+  await expect(historyRows).toHaveCount(historyCount + 1);
+  await expect(page.locator('#standards .standards-grid .card').nth(1)).toContainText('발표용 기준 확인');
+});
+
 test('selected overview date range refreshes profit summary and breakdown', async ({ page }) => {
   await page.goto(appUrl);
   const filter = page.locator('#overview .overview-period-filter');

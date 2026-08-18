@@ -63,7 +63,7 @@ const installPeriodMode = (container, inputs = [...container.querySelectorAll('[
   setMode();
 };
 
-document.querySelector('#standard-modal-button').addEventListener('click', () => document.querySelector('#standard-modal').showModal());
+document.querySelector('#standard-modal-button').addEventListener('click', () => openStandardModal());
 
 document.querySelectorAll('.topic-chips button').forEach((button) => {
   button.addEventListener('click', () => {
@@ -1243,7 +1243,7 @@ function renderStandardsFromData(searchText = '') {
   const history = standardsView.querySelectorAll('.standards-grid .card table tbody')[1];
   if (history) history.innerHTML = window.CogMockData.standards.slice().sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom)).map((standard) => {
     const definition = window.CogMockData.metricDefinitions.find((item) => item.id === standard.metricId);
-    return `<tr><td><b>${standard.effectiveFrom === '2024-01-01' ? 'v1.0' : 'v1.1'}</b></td><td>${standard.effectiveFrom}</td><td>${definition.label}</td><td>관리 기준 적용</td><td>기준 정비</td></tr>`;
+    return `<tr><td><b>${standard.changeSummary ? 'v1.1' : 'v1.0'}</b></td><td>${standard.effectiveFrom}</td><td>${definition.label}</td><td>${standard.changeSummary || '관리 기준 적용'}</td><td>${standard.changeReason || '기준 정비'}</td></tr>`;
   }).join('');
 }
 const standardSearch = document.querySelector('#standards .search');
@@ -1438,23 +1438,50 @@ document.querySelector('#cost .page-head .filters button:last-child')?.addEventL
 document.querySelector('#cost .impact-composition-card [data-profit-export]')?.addEventListener('click', exportProfitExcel);
 document.querySelector('#brief .page-head .filters')?.remove();
 
+function populateStandardFields(form) {
+  const metricId = form.elements.metricId.value;
+  const standard = window.CogDataService.getActiveStandard(metricId, dataDrivenState.end);
+  const fields = form.querySelector('[data-standard-fields]');
+  const labels = { target: '목표값', normalMin: '정상 하한', normalMax: '정상 상한', warningMin: '주의 하한', warningMax: '주의 상한' };
+  fields.innerHTML = Object.entries(labels).filter(([key]) => Number.isFinite(standard?.[key])).map(([key, label]) => `<label>${label}<input name="${key}" type="number" step="any" value="${standard[key]}"></label>`).join('');
+}
+
+function openStandardModal() {
+  const modal = document.querySelector('#standard-modal');
+  const form = modal.querySelector('form');
+  const select = form.elements.metricId;
+  select.innerHTML = window.CogMockData.metricDefinitions.map((definition) => `<option value="${definition.id}">${definition.label}</option>`).join('');
+  form.elements.effectiveFrom.value = dataDrivenState.end;
+  form.elements.reason.value = '';
+  populateStandardFields(form);
+  modal.showModal();
+}
+
 async function saveManagementStandard(form) {
-  const metricLabel = form.querySelector('select')?.value;
-  const definition = window.CogMockData.metricDefinitions.find((item) => item.label === metricLabel);
-  const effectiveFrom = form.querySelector('input')?.value?.slice(0, 10).replaceAll('.', '-') || dataDrivenState.end;
+  const definition = window.CogMockData.metricDefinitions.find((item) => item.id === form.elements.metricId.value);
+  const effectiveFrom = form.elements.effectiveFrom.value || dataDrivenState.end;
   const current = window.CogDataService.getActiveStandard(definition.id, effectiveFrom);
-  const nextStandard = { ...current, metricId: definition.id, effectiveFrom };
+  const numericFields = ['target', 'normalMin', 'normalMax', 'warningMin', 'warningMax'];
+  const nextStandard = { ...current, metricId: definition.id, effectiveFrom, changeSummary: '기준값 변경', changeReason: form.elements.reason.value.trim() || '기준 보정' };
+  numericFields.forEach((key) => {
+    const value = form.elements[key]?.value;
+    if (value !== undefined && value !== '' && Number.isFinite(Number(value))) nextStandard[key] = Number(value);
+  });
   try {
     const response = await fetch(`/api/standards/${encodeURIComponent(definition.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nextStandard) });
     if (!response.ok) throw new Error('standard save failed');
     const standards = await fetch('/api/standards').then((item) => item.json());
     window.CogMockData.standards = standards;
   } catch (_) {
+    window.CogMockData.standards = window.CogMockData.standards.filter((standard) => !(standard.metricId === nextStandard.metricId && standard.effectiveFrom === nextStandard.effectiveFrom));
     window.CogMockData.standards.push(nextStandard);
   }
   renderStandardsFromData(); refreshDataDrivenViews({});
 }
-document.querySelector('#standard-modal form')?.addEventListener('submit', async (event) => { event.preventDefault(); await saveManagementStandard(event.currentTarget); document.querySelector('#standard-modal').close(); });
+const standardModalForm = document.querySelector('#standard-modal form');
+standardModalForm?.elements.metricId.addEventListener('change', () => populateStandardFields(standardModalForm));
+standardModalForm?.querySelector('[data-standard-cancel]').addEventListener('click', () => document.querySelector('#standard-modal').close());
+standardModalForm?.addEventListener('submit', async (event) => { event.preventDefault(); await saveManagementStandard(event.currentTarget); document.querySelector('#standard-modal').close(); });
 async function syncManagementStandardsFromServer() {
   try {
     const response = await fetch('/api/standards');
