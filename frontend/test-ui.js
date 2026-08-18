@@ -75,6 +75,8 @@ assert.ok(app.includes('analysis-mode-tabs'), 'Period comparison and standard co
 assert.ok(!app.includes("analysisTabs.querySelector('[data-analysis-mode=\"standard\"]')?.remove()"), 'Process analysis must keep the management-standard comparison tab visible');
 assert.ok(app.includes('formatStandardValue') && app.includes('standardDisplayDigits'), 'Process standard comparison must format each metric with its approved display precision');
 assert.ok(!app.includes('`상한 ${item.standard.warningMax}${item.unit}`'), 'Process standard comparison must not render raw unrounded warning values');
+assert.ok(app.includes('const managementCostMetricMap'), 'Standard comparison cost rows must map to the same management metrics as the table above');
+assert.ok(app.includes('<th>관리 기준</th><th>선택 기간 실적</th><th>기준 대비 증감</th><th>관련 손익 영향</th>'), 'Standard comparison cost table must use management-standard terminology');
 assert.ok(app.includes('kpi-status-summary-grid'), 'KPI summaries must use a dense status-group layout');
 assert.ok(app.includes('profit-item-chart'), 'Profit impact must retain separate readable item charts');
 assert.ok(app.includes('period-profit-summary'), 'Operations overview needs a compact non-empty profit summary');

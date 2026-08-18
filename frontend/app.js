@@ -564,6 +564,14 @@ const standardText = (summary) => {
   if (standard.normalMin !== undefined && standard.normalMax !== undefined) return `정상 ${formatStandardValue(standard.normalMin, summary)} ~ ${formatStandardValue(standard.normalMax, summary)}`;
   return `관리 상한 ${formatStandardValue(standard.normalMax, summary)}`;
 };
+// The lower table is a management-standard view, not a cumulative usage view.
+// Keep its cost effect from the existing cost records, but show the same KPI
+// target, actual value and unit as the management-standard table above.
+const managementCostMetricMap = [
+  { metricId: 'steamUsage', costItemKeyword: '스팀' },
+  { metricId: 'qualityContent', costItemKeyword: '약품' },
+  { metricId: 'gasOutletTemp', costItemKeyword: '가스' },
+];
 function renderKpiTables(summaries) {
   kpiDetailState.summaries = summaries;
   const sorted = [...summaries].sort((a, b) => ({ abnormal: 0, warning: 1, normal: 2 }[a.status] - { abnormal: 0, warning: 1, normal: 2 }[b.status]));
@@ -1040,8 +1048,15 @@ function renderProcessStandardAnalysis() {
   const filters = processInputs.length >= 2 ? { start: processInputs[0].value, end: processInputs[1].value } : dataDrivenState;
   const summaries = window.CogDataService.getKpiSummaries(filters).filter((item) => processAnalysisState.metricIds.includes(item.id));
   const rows = summaries.map((item) => `<tr><td><b>${item.label}</b></td><td>${formatMetricValue(item)}</td><td><b>${item.standard.effectiveFrom}</b></td><td>${standardText(item)}</td><td>${item.standard.warningMax !== undefined ? `상한 ${formatStandardValue(item.standard.warningMax, item)}` : `하한 ${formatStandardValue(item.standard.warningMin, item)}`}</td><td><span class="status ${statusClass(item.status)}">${statusLabel(item.status)}</span></td><td class="${item.status === 'abnormal' ? 'red-text' : item.status === 'warning' ? 'orange' : 'positive'}">${formatStandardVariance(item)}</td></tr>`).join('');
-  const costRows = window.CogDataService.groupCostByItem(filters).map((row) => `<tr><td><b>${row.costItem}</b></td><td>${row.targetUsage.toLocaleString()}</td><td>${row.actualUsage.toLocaleString()}</td><td class="${row.actualUsage > row.targetUsage ? 'red-text' : 'positive'}">${(row.actualUsage - row.targetUsage).toFixed(1)}</td><td class="${row.variance >= 0 ? 'positive' : 'red-text'}">${row.variance >= 0 ? '+' : ''}${row.variance.toFixed(1)}백만원</td></tr>`).join('');
-  target.innerHTML = `<div class="card-title"><div><h2>관리기준 대비 분석</h2><p>선택 기간 실적을 적용 시점별 관리기준과 비교합니다.</p></div></div><div class="standard-application"><b>기준 적용 안내</b><span>기준 변경일 이후의 실적에는 해당 버전을 적용하고, 과거 실적은 당시 기준으로 판정합니다.</span></div><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>지표</th><th>선택 기간 실적</th><th>적용 기준일</th><th>정상 범위</th><th>주의 기준</th><th>판정</th><th>기준 대비</th></tr></thead><tbody>${rows}</tbody></table></div><h3 class="usage-analysis-title">사용량·손익 기준 대비</h3><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>관리 항목</th><th>기준 사용량</th><th>선택 기간 실제</th><th>사용량 증감</th><th>기준 대비 손익 영향</th></tr></thead><tbody>${costRows}</tbody></table></div>`;
+  const costItems = window.CogDataService.groupCostByItem(filters);
+  const costRows = managementCostMetricMap.map(({ metricId, costItemKeyword }) => {
+    const summary = summaries.find((item) => item.id === metricId);
+    const cost = costItems.find((item) => item.costItem.includes(costItemKeyword));
+    if (!summary?.hasData) return '';
+    const delta = summary.targetVariance;
+    return `<tr><td><b>${summary.label}</b></td><td>${formatStandardValue(summary.standard.target, summary)}</td><td>${formatStandardValue(summary.value, summary)}</td><td class="${summary.status === 'normal' ? 'positive' : summary.status === 'warning' ? 'orange' : 'red-text'}">${delta >= 0 ? '+' : ''}${formatStandardValue(delta, summary)}</td><td class="${(cost?.variance || 0) >= 0 ? 'positive' : 'red-text'}">${(cost?.variance || 0) >= 0 ? '+' : ''}${(cost?.variance || 0).toFixed(1)}백만원</td></tr>`;
+  }).join('');
+  target.innerHTML = `<div class="card-title"><div><h2>관리기준 대비 분석</h2><p>선택 기간 실적을 적용 시점별 관리기준과 비교합니다.</p></div></div><div class="standard-application"><b>기준 적용 안내</b><span>기준 변경일 이후의 실적에는 해당 버전을 적용하고, 과거 실적은 당시 기준으로 판정합니다.</span></div><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>지표</th><th>선택 기간 실적</th><th>적용 기준일</th><th>정상 범위</th><th>주의 기준</th><th>판정</th><th>기준 대비</th></tr></thead><tbody>${rows}</tbody></table></div><h3 class="usage-analysis-title">관리기준·손익 영향</h3><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>관리 항목</th><th>관리 기준</th><th>선택 기간 실적</th><th>기준 대비 증감</th><th>관련 손익 영향</th></tr></thead><tbody>${costRows}</tbody></table></div>`;
 }
 renderProcessStandardAnalysis();
 
