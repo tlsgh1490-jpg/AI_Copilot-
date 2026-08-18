@@ -40,3 +40,15 @@ test('accepts operating-data input and exposes it through the API', async () => 
     await new Promise((resolve) => app.close(resolve));
   }
 });
+
+test('does not cache frontend assets so a refresh receives the latest dashboard', async () => {
+  const app = createApplication({ generateNarrative: async () => null, databasePath: ':memory:' });
+  await new Promise((resolve) => app.listen(0, '127.0.0.1', resolve));
+  try {
+    const response = await fetch(`http://127.0.0.1:${app.address().port}/app.js`);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('cache-control'), 'no-cache');
+  } finally {
+    await new Promise((resolve) => app.close(resolve));
+  }
+});

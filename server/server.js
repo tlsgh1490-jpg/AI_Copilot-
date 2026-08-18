@@ -90,7 +90,10 @@ function createApplication(options = {}) {
         response.writeHead(404).end('Not found');
         return;
       }
-      response.writeHead(200, { 'Content-Type': mimeTypes[path.extname(filePath)] || 'application/octet-stream' });
+      response.writeHead(200, {
+        'Content-Type': mimeTypes[path.extname(filePath)] || 'application/octet-stream',
+        'Cache-Control': 'no-cache',
+      });
       fs.createReadStream(filePath).pipe(response);
     } catch (error) {
       response.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
