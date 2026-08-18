@@ -1350,13 +1350,23 @@ function renderDiagnosisFromEvent(eventId = dataDrivenState.selectedEventId, fil
   if (breach) breach.innerHTML = findings.map((item) => `<div class="${statusClass(item.status)}"><span>${item.status === 'normal' ? '연관 항목' : '초과 항목'}</span><b>${item.label}</b><small>${formatMetricValue(item)} · 기준 대비 ${formatMetricDelta(item.variance, item)}</small></div>`).join('');
   const trend = diagnosis.querySelector('.trend-summary');
   if (trend) trend.innerHTML = `<span>관리 기준 <b>${standardText(primary)}</b></span><span>목표 <b>${formatStandardValue(primary.standard.target, primary)}</b></span><span>현재 실적 <b class="${primary.status === 'abnormal' ? 'red-text' : primary.status === 'warning' ? 'orange' : 'positive'}">${formatMetricValue(primary)}</b></span><span>기준 대비 <b class="${primary.status === 'abnormal' ? 'red-text' : primary.status === 'warning' ? 'orange' : 'positive'}">${formatMetricDelta(primary.variance, primary)}</b></span>`;
-  const series = primary.series.slice(-8).map((item) => item.value);
+  const sourceSeries = primary.series;
+  const chartSeries = sourceSeries.length <= 8
+    ? sourceSeries
+    : Array.from({ length: 8 }, (_, index) => sourceSeries[Math.round(index * (sourceSeries.length - 1) / 7)]);
+  const series = chartSeries.map((item) => item.value);
   const low = Math.min(...series), spread = Math.max(...series) - low || 1;
   const path = series.map((value, index) => `${index ? 'L' : 'M'}${index * (760 / (series.length - 1 || 1))} ${155 - ((value - low) / spread) * 120}`).join(' ');
   const chart = diagnosis.querySelector('.diagnosis-chart svg');
   if (chart) {
     chart.querySelector('.actual-line')?.setAttribute('d', path);
     chart.querySelector('.point-label')?.replaceChildren(formatMetricValue(primary));
+  }
+  const xAxis = diagnosis.querySelector('.x-axis');
+  if (xAxis && chartSeries.length) {
+    const tickCount = Math.min(5, chartSeries.length);
+    const ticks = Array.from({ length: tickCount }, (_, index) => chartSeries[Math.round(index * (chartSeries.length - 1) / Math.max(1, tickCount - 1))]);
+    xAxis.innerHTML = ticks.map((item) => `<span>${item.period.slice(5).replace('-', '.')}</span>`).join('');
   }
   const related = diagnosis.querySelector('.related-metrics');
   if (related) related.innerHTML = findingIds.map((id) => {

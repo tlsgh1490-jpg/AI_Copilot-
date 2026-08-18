@@ -230,6 +230,15 @@ test('event diagnosis analyzes only the selected event period inside a wider que
   expect(actual).toContain(expected);
 });
 
+test('diagnosis trend labels use the same period as the selected diagnosis query', async ({ page }) => {
+  await page.goto(appUrl);
+  await page.locator('.sidebar .subnav [data-view="diagnosis"]').click();
+  await page.evaluate(() => window.renderDiagnosisFromEvent?.(null, { start: '2025-01-01', end: '2025-02-28' }));
+  const labels = await page.locator('#diagnosis .x-axis span').allTextContents();
+  expect(labels[0]).toBe('01.01');
+  expect(labels.at(-1)).toBe('02.28');
+});
+
 test('cost period filter refreshes monthly table to selected month', async ({ page }) => {
   await page.goto(appUrl);
   await page.locator('.sidebar .subnav [data-view="cost"]').click();
