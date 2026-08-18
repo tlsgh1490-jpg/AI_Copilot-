@@ -100,9 +100,9 @@ def apply_requested_scales(frame: pd.DataFrame) -> pd.DataFrame:
         if column in result:
             result[column] = result[column] / 20.0
     if {"KPI_U04_OUT_P01", "KPI_U04_OUT_P02", "KPI_U04_OUT_P03", "VAR_U04_FEED_U02"}.issubset(result.columns):
-        result["KPI_U04_UI_P01"] = result["KPI_U04_OUT_P01"] * 1000 / result["VAR_U04_FEED_U02"]
-        result["KPI_U04_UI_P02"] = result["KPI_U04_OUT_P02"] * 1000 / result["VAR_U04_FEED_U02"]
-        result["KPI_U04_UI_P03"] = result["KPI_U04_OUT_P03"] * 1000 / result["VAR_U04_FEED_U02"]
+        result["KPI_U04_UI_P01"] = result["KPI_U04_OUT_P01"] / result["VAR_U04_FEED_U02"]
+        result["KPI_U04_UI_P02"] = result["KPI_U04_OUT_P02"] / result["VAR_U04_FEED_U02"]
+        result["KPI_U04_UI_P03"] = result["KPI_U04_OUT_P03"] / result["VAR_U04_FEED_U02"]
     if {"KPI_U04_CHEM_M01", "KPI_U04_CHEM_M02", "KPI_U04_QTY_G01"}.issubset(result.columns):
         result["KPI_U04_CHEM_U01"] = result["KPI_U04_CHEM_M01"] * 1000 / result["KPI_U04_QTY_G01"]
         result["KPI_U04_CHEM_U02"] = result["KPI_U04_CHEM_M02"] * 1000 / result["KPI_U04_QTY_G01"]

@@ -35,5 +35,5 @@ class AggregateTests(unittest.TestCase):
             "KPI_U04_CONTAIN_S01": [0.5] * 24,
         })
         row = build_daily_kpis(hourly).iloc[0]
-        self.assertAlmostEqual(row["KPI_U04_UI_P01"], row["KPI_U04_OUT_P01"] * 1000 / row["VAR_U04_FEED_U02"])
+        self.assertAlmostEqual(row["KPI_U04_UI_P01"], row["KPI_U04_OUT_P01"] / row["VAR_U04_FEED_U02"])
         self.assertAlmostEqual(row["KPI_U04_CHEM_U02"], row["KPI_U04_CHEM_M02"] * 1000 / row["KPI_U04_QTY_G01"])

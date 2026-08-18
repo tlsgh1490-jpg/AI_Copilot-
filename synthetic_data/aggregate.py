@@ -24,9 +24,9 @@ def build_daily_kpis(hourly: pd.DataFrame) -> pd.DataFrame:
     aggregation = {column: ("sum" if column in SUM_COLUMNS else "mean") for column in numeric_columns}
     daily = assigned.groupby("operation_date", as_index=False).agg(aggregation)
 
-    daily["KPI_U04_UI_P01"] = daily["KPI_U04_OUT_P01"] * 1000 / daily["VAR_U04_FEED_U02"]
-    daily["KPI_U04_UI_P02"] = daily["KPI_U04_OUT_P02"] * 1000 / daily["VAR_U04_FEED_U02"]
-    daily["KPI_U04_UI_P03"] = daily["KPI_U04_OUT_P03"] * 1000 / daily["VAR_U04_FEED_U02"]
+    daily["KPI_U04_UI_P01"] = daily["KPI_U04_OUT_P01"] / daily["VAR_U04_FEED_U02"]
+    daily["KPI_U04_UI_P02"] = daily["KPI_U04_OUT_P02"] / daily["VAR_U04_FEED_U02"]
+    daily["KPI_U04_UI_P03"] = daily["KPI_U04_OUT_P03"] / daily["VAR_U04_FEED_U02"]
     daily["KPI_U04_CHEM_U01"] = daily["KPI_U04_CHEM_M01"] * 1000 / daily["KPI_U04_QTY_G01"]
     daily["KPI_U04_CHEM_U02"] = daily["KPI_U04_CHEM_M02"] * 1000 / daily["KPI_U04_QTY_G01"]
     return daily

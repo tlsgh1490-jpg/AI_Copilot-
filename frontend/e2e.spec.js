@@ -468,6 +468,12 @@ test('production and chemical unit metrics retain their supplied calculation bas
   await expect(page.locator('#processOverview .process-kpi-grid')).toContainText('g/Nm³');
 });
 
+test('production unit source values are expressed as kilograms per raw-material ton', async ({ page }) => {
+  await page.goto(appUrl);
+  const values = await page.evaluate(() => window.CogMockData.dailyObservations.flatMap((row) => [row.metrics.aUnit, row.metrics.bUnit, row.metrics.cUnit]));
+  expect(Math.max(...values)).toBeLessThan(20);
+});
+
 test('process overview exposes steam M01 through M06 with shared management criteria', async ({ page }) => {
   await page.goto(appUrl);
   await page.locator('.sidebar .subnav [data-view="processOverview"]').click();

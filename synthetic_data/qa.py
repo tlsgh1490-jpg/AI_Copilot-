@@ -16,9 +16,9 @@ def run_qa(hourly: pd.DataFrame, daily: pd.DataFrame, events: pd.DataFrame) -> p
     ))
 
     formula_checks = [
-        np.allclose(daily["KPI_U04_UI_P01"], daily["KPI_U04_OUT_P01"] * 1000 / daily["VAR_U04_FEED_U02"]),
-        np.allclose(daily["KPI_U04_UI_P02"], daily["KPI_U04_OUT_P02"] * 1000 / daily["VAR_U04_FEED_U02"]),
-        np.allclose(daily["KPI_U04_UI_P03"], daily["KPI_U04_OUT_P03"] * 1000 / daily["VAR_U04_FEED_U02"]),
+        np.allclose(daily["KPI_U04_UI_P01"], daily["KPI_U04_OUT_P01"] / daily["VAR_U04_FEED_U02"]),
+        np.allclose(daily["KPI_U04_UI_P02"], daily["KPI_U04_OUT_P02"] / daily["VAR_U04_FEED_U02"]),
+        np.allclose(daily["KPI_U04_UI_P03"], daily["KPI_U04_OUT_P03"] / daily["VAR_U04_FEED_U02"]),
         np.allclose(daily["KPI_U04_CHEM_U01"], daily["KPI_U04_CHEM_M01"] * 1000 / daily["KPI_U04_QTY_G01"]),
         np.allclose(daily["KPI_U04_CHEM_U02"], daily["KPI_U04_CHEM_M02"] * 1000 / daily["KPI_U04_QTY_G01"]),
     ]
