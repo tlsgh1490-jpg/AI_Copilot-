@@ -2,7 +2,15 @@ const views = [...document.querySelectorAll('.view')];
 const navButtons = [...document.querySelectorAll('[data-view]')];
 const sidebarNavButtons = [...document.querySelectorAll('.sidebar [data-view]')];
 const crumb = document.querySelector('#crumb');
-const labels = { overview: '통합 현황', brief: 'Brief & Copilot', diagnosis: '이상 진단', cost: '원가 영향', process: '공정 데이터 분석', standards: '기준 체계' };
+const labels = { overview: '통합 운영현황', brief: 'AI 분석 브리핑', processOverview: '공정 분석 현황', diagnosis: '이상 분석·점검', cost: '손익 영향 분석', process: '공정 데이터 비교 분석', standards: '관리기준 체계' };
+
+const viewTitles = { overview: '통합 운영현황', brief: 'AI 분석 브리핑', diagnosis: '이상 분석·점검', cost: '손익 영향 분석', process: '공정 데이터 비교 분석', standards: '관리기준 체계' };
+Object.entries(viewTitles).forEach(([id, title]) => {
+  const heading = document.querySelector(`#${id} .page-head h1`);
+  if (heading) heading.firstChild.nodeValue = title;
+});
+const aiExplanationLabel = document.querySelector('#brief .copilot .section-label');
+if (aiExplanationLabel) aiExplanationLabel.firstChild.nodeValue = 'AI 분석 설명 ';
 
 document.querySelector('.topbar .top-meta')?.remove();
 
@@ -16,6 +24,7 @@ function showView(id) {
   });
   crumb.textContent = labels[id];
   if (window.refreshDataDrivenViews && ['brief', 'diagnosis', 'cost', 'standards'].includes(id)) window.refreshDataDrivenViews();
+  if (id === 'brief' && typeof renderProfitBreakdown === 'function') renderProfitBreakdown(dataDrivenState);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -279,8 +288,8 @@ if (processPage) {
   processOverview.id = 'processOverview';
   processOverview.className = 'view';
   processOverview.innerHTML = `
-    <div class="page-head split"><div><p class="eyebrow">PROCESS OVERVIEW</p><h1>\uacf5\uc815 \ud604\ud669</h1><p>\uc120\ud0dd\ud55c \uae30\uac04\uc758 \uc8fc\uc694 KPI\uc640 \uacf5\uc815\ubcc0\uc218 \ud604\ud669\uc744 \ud55c\ub208\uc5d0 \ud655\uc778\ud569\ub2c8\ub2e4.</p></div><span class="synthetic">\ud569\uc131 \ub370\uc774\ud130</span></div>
-    <article class="card process-overview-filter"><div class="period-inputs"><label>\uc870\ud68c \uc2dc\uc791<input data-period-input type="date" value="2025-12-01"></label><label>\uc870\ud68c \uc885\ub8cc<input data-period-input type="date" value="2025-12-31"></label><label class="time-mode"><input data-time-mode type="checkbox"> 시간 단위 조회</label></div><details class="metric-selector"><summary>\ud45c\uc2dc \uc9c0\ud45c \uc120\ud0dd <b class="visible-count">8\uac1c</b></summary><div class="metric-checks"></div></details><button class="primary" data-process-query>\uc870\ud68c</button></article>
+    <div class="page-head split"><div><p class="eyebrow">PROCESS OVERVIEW</p><h1>\uacf5\uc815 \ubd84\uc11d \ud604\ud669</h1><p>\uc120\ud0dd\ud55c \uae30\uac04\uc758 \uc8fc\uc694 KPI\uc640 \uacf5\uc815\ubcc0\uc218 \ud604\ud669\uc744 \ud55c\ub208\uc5d0 \ud655\uc778\ud569\ub2c8\ub2e4.</p></div><span class="synthetic">\ud569\uc131 \ub370\uc774\ud130</span></div>
+    <article class="card process-overview-filter"><div class="period-inputs"><label>\uc870\ud68c \uc2dc\uc791<input data-period-input type="date" value="2025-12-01"></label><label>\uc870\ud68c \uc885\ub8cc<input data-period-input type="date" value="2025-12-31"></label><label class="time-mode time-mode-control"><input data-time-mode type="checkbox"> 시간 단위 조회</label></div><details class="metric-selector"><summary>\ud45c\uc2dc \uc9c0\ud45c \uc120\ud0dd <b class="visible-count">8\uac1c</b></summary><div class="metric-checks"></div></details><button class="primary" data-process-query>\uc870\ud68c</button></article>
     <article class="card process-data-table"><div class="card-title"><div><h2>\uc870\ud68c \uae30\uac04 \uc2e4\uc801 \ub370\uc774\ud130</h2><p>\uc77c\uc790 \uc21c\uc73c\ub85c KPI\uc640 \uc8fc\uc694 \uacf5\uc815\ubcc0\uc218 \uc2e4\uc801\uc744 \ud45c\uc2dc\ud569\ub2c8\ub2e4.</p></div><div class="table-actions"><span class="table-period-label"></span><button class="pill" type="button" data-process-export>\uc5d1\uc140 \ub2e4\uc6b4\ub85c\ub4dc \u2193</button></div></div><div class="process-table-scroll"><table class="simple-table compact"><thead><tr><th>\uc77c\uc790</th><th>\uad6c\ubd84</th><th>\ud56d\ubaa9</th><th>\uc2e4\uc801</th></tr></thead><tbody></tbody></table></div></article>
     <div class="overview-heading"><div><h2>\uc8fc\uc694 \uc9c0\ud45c \ud604\ud669</h2><p>\ud604\uc7ac\uac12\u00b7\uad00\ub9ac\uae30\uc900\u00b7\ucd94\uc774\ub97c \ud655\uc778\ud558\uace0 \ud544\uc694\ud55c \uc9c0\ud45c\ub9cc \uc120\ud0dd\ud574 \uc870\ud68c\ud569\ub2c8\ub2e4.</p></div><button class="outline" data-select-all>\uc804\uccb4 \uc9c0\ud45c \ubcf4\uae30</button></div>
     <div class="process-kpi-grid"></div>`;
@@ -370,7 +379,7 @@ const addImpactPeriodFilter = (viewId, title) => {
   if (!pageHead) return;
   const filter = document.createElement('article');
   filter.className = 'card impact-period-filter';
-  filter.innerHTML = '<div class="impact-period-label"><b>' + title + ' \uc870\ud68c \uae30\uac04</b><span>\ud569\uc131 \ub370\uc774\ud130 \uae30\uc900</span></div><div class="impact-period-inputs"><label>\uc2dc\uc791<input data-period-input type="date" value="2025-12-01"></label><label>\uc885\ub8cc<input data-period-input type="date" value="2025-12-31"></label><label class="time-mode"><input data-time-mode type="checkbox"> 시간 단위 조회</label></div><div class="impact-quick"><button type="button">\uc804\uc77c</button><button type="button">\uc804 7\uc77c</button><button type="button">\uc804 30\uc77c</button></div><button class="primary" type="button">\uc870\ud68c</button><small class="impact-period-selected"></small>';
+  filter.innerHTML = '<div class="impact-period-label"><b>' + title + ' \uc870\ud68c \uae30\uac04</b><span>\ud569\uc131 \ub370\uc774\ud130 \uae30\uc900</span></div><div class="impact-period-inputs"><label>\uc2dc\uc791<input data-period-input type="date" value="2025-12-01"></label><label>\uc885\ub8cc<input data-period-input type="date" value="2025-12-31"></label><label class="time-mode time-mode-control"><input data-time-mode type="checkbox"> 시간 단위 조회</label></div><div class="impact-quick"><button type="button">\uc804\uc77c</button><button type="button">\uc804 7\uc77c</button><button type="button">\uc804 30\uc77c</button></div><button class="primary" type="button">\uc870\ud68c</button><small class="impact-period-selected"></small>';
   pageHead.insertAdjacentElement('afterend', filter);
   const inputs = [...filter.querySelectorAll('[data-period-input]')];
   const selected = filter.querySelector('.impact-period-selected');
@@ -424,24 +433,27 @@ if (monthlyNet) {
     const chartItems = focusedItem ? [focusedItem] : costItems;
     const charts = chartItems.map((costItem) => {
       const rows = (costItem === '약품 A' || costItem === '약품 B'
-        ? window.CogDataService.getCostRecords({ ...profitImpactFilters, costItem })
+        ? window.CogDataService.getCostRecords({ ...profitImpactFilters, granularity: profitGranularity, costItem })
         : profitImpactData.filter((row) => row.costItem === costItem))
         .map((row) => ({ ...row, month: profitGranularity === 'day' ? row.period.slice(5) : Number(row.period.slice(5, 7)) }));
       const maxValue = Math.max(1.4, ...rows.map((row) => Math.abs(row.actualProfitImpact)));
       const actualTotal = rows.reduce((sum, row) => sum + row.actualProfitImpact, 0);
       const baselineTotal = rows.reduce((sum, row) => sum + row.baselineProfitImpact, 0);
       const varianceTotal = actualTotal - baselineTotal;
-      const pointX = (index) => 46 + index * 65;
-      const pointY = (value) => 152 - value * 112 / maxValue;
+      const chartWidth = Math.max(800, 100 + rows.length * 70);
+      const pointX = (index) => 42 + index * 64;
+      const pointY = (value) => 145 - value * 96 / maxValue;
       const bars = rows.map((row, index) => {
-        const y = Math.min(152, pointY(row.actualProfitImpact));
-        const valueY = row.actualProfitImpact >= 0 ? y - 7 : y + Math.abs(row.actualProfitImpact * 112 / maxValue) + 14;
-        return '<g><title>' + row.month + '\uc6d4 | \uc2e4\uc81c: ' + money(row.actualProfitImpact) + ' | \uae30\uc900: ' + money(row.baselineProfitImpact) + ' | \ucd08\uacfc/\uc808\uac10: ' + money(row.variance) + '</title><rect class=\"profit-bar ' + rowClass(row.actualProfitImpact) + '\" x=\"' + (pointX(index) - 11) + '\" y=\"' + y + '\" width=\"22\" height=\"' + Math.abs(row.actualProfitImpact * 112 / maxValue) + '\" rx=\"2\"/><text class=\"profit-value\" x=\"' + pointX(index) + '\" y=\"' + valueY + '\">' + money(row.actualProfitImpact) + '</text><text class=\"profit-month\" x=\"' + pointX(index) + '\" y=\"218\">25.' + String(row.month).padStart(2, '0') + '</text></g>';
+        const y = Math.min(145, pointY(row.actualProfitImpact));
+        const height = Math.abs(row.actualProfitImpact * 96 / maxValue);
+        const valueY = row.actualProfitImpact >= 0 ? y - 7 : y + height + 16;
+        const label = profitGranularity === 'day' ? row.period.slice(5).replace('-', '/') : '25.' + String(row.month).padStart(2, '0');
+        return '<g><title>' + row.month + '\uc6d4 | \uc2e4\uc81c: ' + money(row.actualProfitImpact) + ' | \uae30\uc900: ' + money(row.baselineProfitImpact) + ' | \ucd08\uacfc/\uc808\uac10: ' + money(row.variance) + '</title><rect class=\"profit-bar ' + rowClass(row.actualProfitImpact) + '\" x=\"' + (pointX(index) - 11) + '\" y=\"' + y + '\" width=\"22\" height=\"' + height + '\" rx=\"2\"/><text class=\"profit-value\" x=\"' + pointX(index) + '\" y=\"' + valueY + '\">' + money(row.actualProfitImpact) + '</text><text class=\"profit-month\" x=\"' + pointX(index) + '\" y=\"278\">' + label + '</text></g>';
       }).join('');
       const numberRows = '';
       const points = rows.map((row, index) => pointX(index) + ',' + pointY(row.baselineProfitImpact)).join(' ');
       const last = rows.at(-1);
-      return '<article class=\"profit-item-chart\"><div><h4>' + costItem + '</h4><span class=\"profit-chart-summary\">\uc2e4\uc81c \ub204\uacc4 <b>' + money(actualTotal) + '</b> <em>(\uae30\uc900 \ub300\ube44 ' + money(varianceTotal) + ')</em><small>\ub9c9\ub300 \uc2e4\uc81c · \uc120 \uad00\ub9ac\uae30\uc900</small></span></div><svg viewBox=\"0 0 800 230\" aria-label=\"' + costItem + ' \uc6d4\ubcc4 \uc2e4\uc81c \uc190\uc775\uc601\ud5a5\uacfc \uad00\ub9ac\uae30\uc900\"><line class=\"profit-grid\" x1=\"18\" y1=\"36\" x2=\"790\" y2=\"36\"/><line class=\"profit-zero\" x1=\"18\" y1=\"152\" x2=\"790\" y2=\"152\"/><line class=\"profit-grid\" x1=\"18\" y1=\"204\" x2=\"790\" y2=\"204\"/>' + bars + '<polyline class=\"profit-baseline\" points=\"' + points + '\"/><text class=\"profit-baseline-label\" x=\"' + (pointX(rows.length - 1) + 10) + '\" y=\"' + (pointY(last.baselineProfitImpact) - 8) + '\">\uae30\uc900 ' + money(last.baselineProfitImpact) + '</text></svg>' + numberRows + '<small>\uae30\uc900 \ub204\uacc4 ' + money(baselineTotal) + ' · \uc2e4\uc81c \ub204\uacc4 ' + money(actualTotal) + '</small></article>';
+      return '<article class=\"profit-item-chart\"><div><h4>' + costItem + '</h4><span class=\"profit-chart-summary\">\uc2e4\uc81c \ub204\uacc4 <b>' + money(actualTotal) + '</b> <em>(\uae30\uc900 \ub300\ube44 ' + money(varianceTotal) + ')</em><small>\ub9c9\ub300 \uc2e4\uc81c · \uc120 \uad00\ub9ac\uae30\uc900</small></span></div><svg viewBox=\"0 0 ' + chartWidth + ' 285\" style=\"min-width:' + chartWidth + 'px\" aria-label=\"' + costItem + ' \uc77c\ubcc4/\uc6d4\ubcc4 \uc2e4\uc81c \uc190\uc775\uc601\ud5a5\uacfc \uad00\ub9ac\uae30\uc900\"><line class=\"profit-grid\" x1=\"18\" y1=\"36\" x2=\"' + (chartWidth - 10) + '\" y2=\"36\"/><line class=\"profit-zero\" x1=\"18\" y1=\"145\" x2=\"' + (chartWidth - 10) + '\" y2=\"145\"/><line class=\"profit-grid\" x1=\"18\" y1=\"250\" x2=\"' + (chartWidth - 10) + '\" y2=\"250\"/>' + bars + '<polyline class=\"profit-baseline\" points=\"' + points + '\"/><text class=\"profit-baseline-label\" x=\"' + (pointX(rows.length - 1) + 10) + '\" y=\"' + (pointY(last.baselineProfitImpact) - 8) + '\">\uae30\uc900 ' + money(last.baselineProfitImpact) + '</text></svg>' + numberRows + '<small>\uae30\uc900 \ub204\uacc4 ' + money(baselineTotal) + ' · \uc2e4\uc81c \ub204\uacc4 ' + money(actualTotal) + '</small></article>';
     }).join('');
     return '<section class=\"profit-item-charts\">' + charts + '</section>';
   };
@@ -477,7 +489,16 @@ if (monthlyNet) {
     const varianceRate = Math.abs(cumulativeVariance / (cumulativeBaseline || 1) * 100).toFixed(1);
     const periodSummary = '<div class=\"period-summary\"><span>\uc120\ud0dd \uae30\uac04 \ub204\uacc4 <b class=\"' + rowClass(cumulativeActual) + '\">' + money(cumulativeActual) + '</b></span><span>\uae30\uc900 \ub204\uacc4 <b>' + money(cumulativeBaseline) + '</b></span><span>\uae30\uc900 \ub300\ube44 <b class=\"' + rowClass(cumulativeVariance) + '\">' + money(cumulativeVariance) + ' ' + (cumulativeVariance >= 0 ? '\uc808\uac10' : '\uc545\ud654') + ' <em>(' + (cumulativeVariance >= 0 ? '+' : '-') + varianceRate + '%)</em></b></span></div>';
     profitDetail.innerHTML = '<div class=\"card-title\"><div><h2>\uc6d4\ubcc4 \uc190\uc775\uc601\ud5a5</h2><p>\ud45c\uc5d0\uc11c \uc804\uccb4 \ud604\ud669\uc744 \ud655\uc778\ud558\uace0, \ud56d\ubaa9\uc744 \uc120\ud0dd\ud574 \uae30\uc900 \ub300\ube44 \uc0c1\uc138 \ucd94\uc774\ub97c \ubd05\ub2c8\ub2e4.</p></div><button class=\"pill\">CSV \ub2e4\uc6b4\ub85c\ub4dc \u2193</button></div><div class=\"profit-table-scroll\"><table class=\"simple-table compact profit-impact-table\"><thead><tr><th>\uc190\uc775 \ud56d\ubaa9</th>' + Array.from({ length: 12 }, (_, index) => '<th>' + (index + 1) + '\uc6d4</th>').join('') + '</tr></thead><tbody>' + tableRows + '</tbody></table></div><div class=\"profit-item-tabs\">' + costItems.map((costItem) => '<button class=\"' + (costItem === selectedItem ? 'selected' : '') + '\" data-profit-item=\"' + costItem + '\">' + costItem + '</button>').join('') + '</div><section class=\"profit-detail-chart\"><div class=\"card-title\"><div><h3>' + selectedItem + ' \uc6d4\ubcc4 \uc0c1\uc138</h3><p>\ub9c9\ub300: \uc2e4\uc81c \uc190\uc775\uc601\ud5a5 · \uc120: \uc6d4\ubcc4 \uae30\uc900 \uc190\uc775\uc601\ud5a5</p></div><span class=\"criterion-key\">\ub9c9\ub300 \ud638\ubc84 \uc2dc \uc2e4\uc81c\u00b7\uae30\uc900\u00b7\ucc28\uc774 \ud655\uc778</span></div><div class=\"profit-chart-wrap\"><div class=\"profit-y-axis\"><span>+' + maxValue.toFixed(1) + '\uc5b5</span><span>0</span><span>-' + maxValue.toFixed(1) + '\uc5b5</span></div><svg viewBox=\"0 0 710 ' + chartHeight + '\" role=\"img\" aria-label=\"' + selectedItem + ' \uc6d4\ubcc4 \uc2e4\uc81c \ubc0f \uae30\uc900 \uc190\uc775\uc601\ud5a5\"><line class=\"profit-grid\" x1=\"18\" y1=\"28\" x2=\"700\" y2=\"28\"/><line class=\"profit-zero\" x1=\"18\" y1=\"100\" x2=\"700\" y2=\"100\"/><line class=\"profit-grid\" x1=\"18\" y1=\"172\" x2=\"700\" y2=\"172\"/>' + bars + '<polyline class=\"profit-baseline\" points=\"' + linePoints + '\"/>' + lineDots + '</svg></div></section>';
-    profitDetail.querySelector('.profit-impact-table thead tr').innerHTML = '<th>\uc190\uc775 \ud56d\ubaa9</th>' + displayedMonths.map((month) => '<th>' + month + '\uc6d4</th>').join('');
+    const detailTitle = profitGranularity === 'day' ? '일별 손익영향' : '월별 손익영향';
+    profitDetail.querySelector('.card-title h2').textContent = detailTitle;
+    profitDetail.querySelector('.card-title p').textContent = profitGranularity === 'day'
+      ? '표에서 일별 손익영향을 확인하고, 항목을 선택해 상세 추이를 봅니다.'
+      : '표에서 월별 손익영향을 확인하고, 항목을 선택해 상세 추이를 봅니다.';
+    const detailExport = profitDetail.querySelector('.card-title .pill');
+    detailExport.dataset.profitExport = '';
+    detailExport.textContent = '엑셀 다운로드 ↓';
+    detailExport.addEventListener('click', exportProfitExcel);
+    profitDetail.querySelector('.profit-impact-table thead tr').innerHTML = '<th>\uc190\uc775 \ud56d\ubaa9</th>' + displayedMonths.map((month) => '<th>' + periodLabel({ period: month }) + '</th>').join('');
     profitDetail.querySelectorAll('.profit-y-axis span').forEach((axis) => { axis.textContent = axis.textContent.replace('억', '백만원'); });
     const detailTabs = profitDetail.querySelector('.profit-item-tabs');
     detailItems.filter((item) => !costItems.includes(item)).forEach((item) => detailTabs.insertAdjacentHTML('beforeend', '<button class="' + (item === selectedItem ? 'selected' : '') + '" data-profit-item="' + item + '">' + item + '</button>'));
@@ -544,11 +565,32 @@ const dataDrivenState = {
 const latestDataPeriod = window.CogMockData.dailyObservations.map((row) => row.period).sort().at(-1) || window.CogMockData.metadata.referenceAt.slice(0, 10);
 dataDrivenState.start = latestDataPeriod;
 dataDrivenState.end = latestDataPeriod;
-const processAnalysisState = { metricIds: ['qualityContent', 'steamUsage', 'gasOutletTemp'] };
-const formatMetricValue = (summary) => !summary?.hasData || !Number.isFinite(summary.value) ? '-' : `${summary.value.toLocaleString(undefined, { maximumFractionDigits: summary.decimals })}${summary.unit ? ` ${summary.unit}` : ''}`;
+const processAnalysisState = {
+  metricIds: [
+    'purifiedVolume', 'chemicalA', 'chemicalB', 'steamUsage',
+    'steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06',
+    'qualityContent', 'gasOutletTemp',
+  ],
+};
+// 분석 화면에서는 원인 관계가 설정된 변수만 자동으로 함께 보여준다.
+// 관계가 설정되지 않은 변수는 임의로 원인 후보에 넣지 않는다.
+const processAnalysisRelatedMetrics = {
+  qualityContent: ['steamM01', 'steamM02', 'steamM03', 'steamM04'],
+  steamUsage: ['steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06'],
+};
+const processStandardState = { steamDetailsOpen: false };
 const standardDisplayDigits = (summary) => ({ steamUsage: 1, qualityContent: 3, gasOutletTemp: 1 }[summary.id] ?? summary.decimals);
-const formatStandardValue = (value, summary) => !Number.isFinite(value) ? '-' : `${value.toLocaleString(undefined, { minimumFractionDigits: standardDisplayDigits(summary), maximumFractionDigits: standardDisplayDigits(summary) })}${summary.unit}`;
-const formatStandardVariance = (summary) => !Number.isFinite(summary.variance) ? '-' : `${summary.variance >= 0 ? '+' : ''}${summary.variance.toLocaleString(undefined, { minimumFractionDigits: standardDisplayDigits(summary), maximumFractionDigits: standardDisplayDigits(summary) })}${summary.unit}`;
+const formatMetricNumber = (value, summary, signed = false) => !Number.isFinite(value) ? '-' : `${signed && value >= 0 ? '+' : ''}${value.toLocaleString(undefined, { minimumFractionDigits: standardDisplayDigits(summary), maximumFractionDigits: standardDisplayDigits(summary) })}`;
+const formatMetricValue = (summary) => !summary?.hasData ? '-' : `${formatMetricNumber(summary.value, summary)}${summary.unit ? ` ${summary.unit}` : ''}`;
+const formatMetricDelta = (value, summary) => `${formatMetricNumber(value, summary, true)}${summary.unit}`;
+const formatStandardValue = (value, summary) => `${formatMetricNumber(value, summary)}${summary.unit}`;
+const formatStandardVariance = (summary) => formatMetricDelta(summary.variance, summary);
+window.CogMetricFormat = {
+  value(value, metricId, unit = '', signed = false) {
+    const definition = window.CogMockData.metricDefinitions.find((item) => item.id === metricId) || { id: metricId, decimals: 3 };
+    return `${formatMetricNumber(value, definition, signed)}${unit || definition.unit || ''}`;
+  },
+};
 const statusClass = (status) => status === 'abnormal' ? 'danger' : status === 'warning' ? 'warning' : 'normal';
 const statusLabel = (status) => status === 'abnormal' ? '이상' : status === 'warning' ? '주의' : '정상';
 const kpiDetailState = { overview: false, brief: false, summaries: [] };
@@ -569,11 +611,11 @@ function renderKpiTables(summaries) {
   const sorted = [...summaries].sort((a, b) => ({ abnormal: 0, warning: 1, normal: 2 }[a.status] - { abnormal: 0, warning: 1, normal: 2 }[b.status]));
   const overviewItems = kpiDetailState.overview ? sorted : sorted.slice(0, 3);
   const briefItems = kpiDetailState.brief ? sorted : sorted.slice(0, 3);
-  const rows = overviewItems.map((summary) => `<tr><td><span class="status ${statusClass(summary.status)}">● ${statusLabel(summary.status)}</span></td><td><b>${summary.label}</b></td><td class="${summary.status === 'abnormal' ? 'red-text' : summary.status === 'warning' ? 'orange' : 'positive'}"><b>${formatMetricValue(summary)}</b></td><td>${standardText(summary)} <b>${summary.variance >= 0 ? '+' : ''}${summary.variance}${summary.unit}</b></td><td>목표 ${summary.standard.target}${summary.unit} 대비 <b>${summary.targetVariance >= 0 ? '+' : ''}${summary.targetVariance}${summary.unit}</b></td><td>${trendSvg(summary)}<small>점선: 관리 기준</small></td></tr>`).join('');
+  const rows = overviewItems.map((summary) => `<tr><td><span class="status ${statusClass(summary.status)}">● ${statusLabel(summary.status)}</span></td><td><b>${summary.label}</b></td><td class="${summary.status === 'abnormal' ? 'red-text' : summary.status === 'warning' ? 'orange' : 'positive'}"><b>${formatMetricValue(summary)}</b></td><td>${standardText(summary)} <b>${formatMetricDelta(summary.variance, summary)}</b></td><td>목표 ${formatStandardValue(summary.standard.target, summary)} 대비 <b>${formatMetricDelta(summary.targetVariance, summary)}</b></td><td>${trendSvg(summary)}<small>점선: 관리 기준</small></td></tr>`).join('');
   const overviewTable = document.querySelector('#overview .kpi-status-board tbody');
   if (overviewTable) overviewTable.innerHTML = rows;
   const briefTable = document.querySelector('#brief table.simple-table tbody');
-  if (briefTable) briefTable.innerHTML = briefItems.map((summary) => `<tr><td>${summary.label}</td><td class="${summary.status === 'abnormal' ? 'red-text' : summary.status === 'warning' ? 'orange' : 'positive'}">${formatMetricValue(summary)}</td><td>${standardText(summary)}</td><td>${summary.targetVariance >= 0 ? '+' : ''}${summary.targetVariance}${summary.unit}</td><td>${trendSvg(summary)}<small>점선: 관리 기준</small></td></tr>`).join('');
+  if (briefTable) briefTable.innerHTML = briefItems.map((summary) => `<tr><td>${summary.label}</td><td class="${summary.status === 'abnormal' ? 'red-text' : summary.status === 'warning' ? 'orange' : 'positive'}">${formatMetricValue(summary)}</td><td>${standardText(summary)}</td><td>${formatMetricDelta(summary.targetVariance, summary)}</td><td>${trendSvg(summary)}<small>점선: 관리 기준</small></td></tr>`).join('');
   const overviewToggle = document.querySelector('#overview .kpi-detail-toggle');
   if (overviewToggle) overviewToggle.textContent = kpiDetailState.overview ? '주요 KPI만 보기' : `전체 KPI 현황 보기 (${Math.max(0, sorted.length - 3)}개 추가)`;
   const briefToggle = document.querySelector('#brief .brief-kpi-detail-toggle');
@@ -608,12 +650,12 @@ function renderOverviewSparks(summaries) {
     const meta = card.querySelector('.spark-meta');
     const svg = card.querySelector('svg');
     if (value) value.textContent = formatMetricValue(summary);
-    if (target) target.textContent = `${summary.targetVariance >= 0 ? '+' : ''}${summary.targetVariance}${summary.unit}`;
+    if (target) target.textContent = formatMetricDelta(summary.targetVariance, summary);
     if (meta) {
       const metaLabel = meta.querySelector('span');
       const metaValue = meta.querySelector('b');
       if (metaLabel) metaLabel.textContent = standardText(summary);
-      if (metaValue) metaValue.textContent = `목표 대비 ${summary.targetVariance >= 0 ? '+' : ''}${summary.targetVariance}${summary.unit}`;
+      if (metaValue) metaValue.textContent = `목표 대비 ${formatMetricDelta(summary.targetVariance, summary)}`;
     }
     if (svg) {
       const trendSeries = getOverviewSparkSeries(summary.id, summary.series);
@@ -638,7 +680,7 @@ function renderBriefAndOverviewSummary(summaries, profit) {
       group.querySelector('b').innerHTML = `${title} <em>${items.length}건</em>`;
       const list = group.querySelector('.brief-alert-items');
       if (!list) return;
-      list.innerHTML = items.length ? items.map((item) => `<div class="brief-alert-item"><div><span>${item.label}</span><strong>${formatMetricValue(item)}</strong></div><small>${standardText(item)} · 기준 대비 ${item.variance >= 0 ? '+' : ''}${item.variance}${item.unit}</small></div>`).join('') : '<span class="brief-alert-empty">현재 해당 KPI 없음</span>';
+      list.innerHTML = items.length ? items.map((item) => `<div class="brief-alert-item"><div><span>${item.label}</span><strong>${formatMetricValue(item)}</strong></div><small>${standardText(item)} · 기준 대비 ${formatMetricDelta(item.variance, item)}</small></div>`).join('') : '<span class="brief-alert-empty">현재 해당 KPI 없음</span>';
     });
   }
   document.querySelectorAll('.brief-kpi-satisfaction').forEach((element) => {
@@ -649,15 +691,50 @@ function renderBriefAndOverviewSummary(summaries, profit) {
   });
   document.querySelectorAll('.period-profit-summary').forEach((element) => {
     const sign = profit.actualProfitImpact >= 0 ? '+' : '';
-    element.querySelector('b')?.replaceChildren(`${sign}${profit.actualProfitImpact.toFixed(1)}백만원`);
+    const amount = element.querySelector('b');
+    if (amount) {
+      amount.replaceChildren(`${sign}${profit.actualProfitImpact.toFixed(1)}백만원`);
+      amount.className = profit.actualProfitImpact >= 0 ? 'positive' : 'red-text';
+    }
     const small = element.querySelector('small');
     if (small) small.textContent = `기준 ${profit.baselineProfitImpact.toFixed(1)}백만원 대비 ${profit.variance >= 0 ? '+' : ''}${profit.variance.toFixed(1)}백만원`;
   });
+  const briefBreakdown = document.querySelector('#brief .brief-profit-summary .profit-breakdown');
+  if (briefBreakdown) {
+    const items = window.CogDataService.groupCostByItem(dataDrivenState);
+    briefBreakdown.replaceChildren(...items.map((item) => {
+      const row = document.createElement('span');
+      const amount = document.createElement('b');
+      const note = document.createElement('small');
+      amount.textContent = `${item.actualProfitImpact >= 0 ? '+' : ''}${item.actualProfitImpact.toFixed(1)}백만원`;
+      amount.className = item.actualProfitImpact >= 0 ? 'positive' : 'red-text';
+      note.textContent = `기준 대비 ${item.variance >= 0 ? '+' : ''}${item.variance.toFixed(1)}백만원`;
+      row.append(`${item.costItem} `, amount, note);
+      return row;
+    }));
+  }
+}
+function formatPeriodIssueOccurrence(issue) {
+  const start = issue.start.slice(5).replace('-', '.');
+  const end = issue.end.slice(5).replace('-', '.');
+  const period = start === end ? start : start + ' ~ ' + end;
+  return issue.label + ' ' + statusLabel(issue.status) + ' (' + period + ', ' + issue.days + '일)';
 }
 function renderOverviewNarrative(summaries, filters) {
   const focus = summaries.find((item) => item.status === 'abnormal') || summaries.find((item) => item.status === 'warning');
   const event = window.CogDataService.getEvents(filters)[0];
+  const occurrences = window.CogDataService.getPeriodIssueOccurrences(filters);
+  const occurrenceText = occurrences.map(formatPeriodIssueOccurrence).join(' · ');
   const insight = document.querySelector('#overview .insight-list');
+  if (!focus && occurrences.length) {
+    if (insight) insight.innerHTML = '<div><b>기간 내 일시 이탈 확인</b><p>선택 기간 평균은 정상 범위이나, 관리기준 이탈 기록이 있습니다: ' + occurrenceText + '.</p></div><div><b>권장 조치: 이탈 기간 확인</b><p>해당 일자의 공정 변수와 설비 상태를 우선 점검합니다.</p></div>';
+    const diagnosis = document.querySelector('#overview .diagnosis-card');
+    if (diagnosis) {
+      diagnosis.querySelector('.event-banner').innerHTML = '<span>기간 내 일시 이탈</span><b>점검 필요</b>';
+      diagnosis.querySelector('.cause-row b').textContent = '이탈 일자 및 관련 공정 변수 점검';
+    }
+    return;
+  }
   if (insight) insight.innerHTML = focus
     ? `<div><b>${focus.label} ${statusLabel(focus.status)} 징후 확인</b><p>선택 기간의 ${focus.label}가 관리기준을 벗어났습니다. 관련 공정 지표를 우선 확인합니다.</p></div><div><b>최우선 조치: 관련 공정 상태 점검</b><p>${event ? `${event.id} ${event.name} 구간의 연관 지표를 확인합니다.` : '다음 조업일까지 해당 지표의 추이를 모니터링합니다.'}</p></div>`
     : '<div><b>선택 기간 정상 운영</b><p>선택 기간에 관리기준을 벗어난 KPI가 없습니다.</p></div><div><b>권장 조치: 현재 상태 유지</b><p>다음 조회에서도 같은 기준으로 추이를 확인합니다.</p></div>';
@@ -670,8 +747,11 @@ function renderOverviewNarrative(summaries, filters) {
 function renderBriefNarrative(summaries, filters) {
   const focus = summaries.find((item) => item.status === 'abnormal') || summaries.find((item) => item.status === 'warning');
   const event = window.CogDataService.getEvents(filters)[0];
+  const occurrences = window.CogDataService.getPeriodIssueOccurrences(filters);
+  const occurrenceText = occurrences.map(formatPeriodIssueOccurrence).join(' · ');
   const alert = document.querySelector('#brief .brief-full .alert');
   if (alert) alert.innerHTML = focus ? `<b>[${statusLabel(focus.status)}]</b> ${focus.label}가 관리기준을 벗어났습니다. ${event ? `${event.id} ${event.name} 구간의 관련 지표를 확인합니다.` : '관련 공정 지표를 우선 확인합니다.'}` : '<b>[정상]</b> 선택 기간에 관리기준을 벗어난 KPI가 없습니다.';
+  if (alert && !focus && occurrences.length) alert.innerHTML = '<b>[평균 정상]</b> 선택 기간 평균은 정상 범위입니다. 다만 기간 내 관리기준 이탈이 확인되었습니다: ' + occurrenceText + '.';
   const topic = document.querySelector('#brief .topic-chips button');
   if (topic) topic.textContent = event ? `${event.id} · ${event.name}` : focus ? `${focus.label} 이탈` : '선택 기간 정상';
   document.querySelectorAll('#brief .metric-strip').forEach((strip) => {
@@ -706,20 +786,32 @@ function renderProfitBreakdown(filters) {
     if (!item) return;
     target.querySelector('b').textContent = item.costItem;
     target.querySelector('span').textContent = `실제 ${item.actualUsage.toLocaleString()} · 목표 ${item.targetUsage.toLocaleString()} · ${item.variance >= 0 ? '+' : ''}${item.variance.toFixed(1)}백만원`;
-    target.querySelector('strong').textContent = `${item.actualProfitImpact >= 0 ? '+' : ''}${item.actualProfitImpact.toFixed(1)}백만원`;
+    const amount = target.querySelector('strong');
+    if (amount) {
+      amount.textContent = `${item.actualProfitImpact >= 0 ? '+' : ''}${item.actualProfitImpact.toFixed(1)}백만원`;
+      amount.className = item.actualProfitImpact >= 0 ? 'positive' : 'red-text';
+    }
   });
 }
 function renderCostEventTable(filters) {
-  const table = [...document.querySelectorAll('#cost table.simple-table')].find((item) => item.querySelector('tbody td b')?.textContent.includes('EX'));
+  const table = [...document.querySelectorAll('#cost table.simple-table')].find((item) => item.querySelector('thead')?.textContent.includes('이벤트'));
   const body = table?.querySelector('tbody');
   if (!body) return;
   const events = window.CogDataService.getEvents(filters);
+  const formatEventProfit = (value) => `${value > 0 ? '+' : value < 0 ? '△' : ''}${Math.abs(value).toFixed(1)}백만원`;
+  const profitClass = (value) => value < 0 ? 'red-text' : value > 0 ? 'positive' : '';
   const rows = events.map((event) => {
     const records = window.CogDataService.getCostRecords({ start: event.startAt, end: event.endAt });
     const grouped = window.CogDataService.groupCostByItem({ start: event.startAt, end: event.endAt });
     const amount = (keywords) => grouped.find((item) => keywords.some((keyword) => item.costItem.includes(keyword)))?.actualProfitImpact || 0;
     const total = records.reduce((sum, row) => sum + row.actualProfitImpact, 0);
-    return `<tr><td><b>${event.id} · ${event.name}</b><small>영향 지표: ${(event.impactedMetrics || []).join(', ')}</small></td><td>${event.startAt.slice(5, 10).replace('-', '.')} ~ ${event.endAt.slice(5, 10).replace('-', '.')}</td><td>${amount(['가스', 'gas']).toFixed(1)}백만원</td><td>${amount(['약품', 'chemical']).toFixed(1)}백만원</td><td>${amount(['스팀', 'steam']).toFixed(1)}백만원</td><td><b>${total.toFixed(1)}백만원</b></td></tr>`;
+    const gas = amount(['가스', 'gas']);
+    const chemical = amount(['약품', 'chemical']);
+    const steam = amount(['스팀', 'steam']);
+    const occurrenceText = window.CogDataService.getPeriodIssueOccurrences({ start: event.startAt, end: event.endAt })
+      .map(formatPeriodIssueOccurrence).join(' · ');
+    if (occurrenceText) event = { ...event, impactedMetrics: [...(event.impactedMetrics || []), '기간 내 기준 이탈: ' + occurrenceText] };
+    return `<tr><td><b>${event.id} · ${event.name}</b><small>영향 지표: ${(event.impactedMetrics || []).join(', ')}</small></td><td>${event.startAt.slice(5, 10).replace('-', '.')} ~ ${event.endAt.slice(5, 10).replace('-', '.')}</td><td class="${profitClass(gas)}">${formatEventProfit(gas)}</td><td class="${profitClass(chemical)}">${formatEventProfit(chemical)}</td><td class="${profitClass(steam)}">${formatEventProfit(steam)}</td><td class="${profitClass(total)}"><b>${formatEventProfit(total)}</b></td></tr>`;
   });
   body.innerHTML = rows.join('') || '<tr><td colspan="6">선택 기간에 해당하는 이벤트가 없습니다.</td></tr>';
 }
@@ -781,7 +873,11 @@ function refreshDataDrivenViews(nextState = {}, options = {}) {
   window.refreshProcessOverview?.();
   const activeView = document.querySelector('.view.active')?.id;
   if (activeView === 'standards' && typeof renderStandardsFromData === 'function') renderStandardsFromData(document.querySelector('#standards .search')?.value || '');
-  if (activeView === 'brief' && typeof renderCopilotTopic === 'function') renderCopilotTopic('qualityContent');
+  if (activeView === 'brief' && typeof renderCopilotTopic === 'function') {
+    const copilotMetric = window.CogDataService.getPeriodIssues(filters)[0]?.id || summaries.find((item) => item.status !== 'normal')?.id || 'qualityContent';
+    window.dispatchEvent(new CustomEvent('copilot-metric', { detail: copilotMetric }));
+    renderCopilotTopic(copilotMetric);
+  }
   if (activeView === 'process') { if (typeof runProcessComparison === 'function') runProcessComparison(); if (typeof renderProcessStandardAnalysis === 'function') renderProcessStandardAnalysis(); }
   if (activeView === 'cost' && typeof renderCostFromData === 'function') { renderCostFromData(filters); renderCostEventTable(filters); renderCostComposition(filters); removeMeaninglessProfitBaselines(); }
   if (activeView === 'diagnosis' && typeof renderDiagnosisFromEvent === 'function') renderDiagnosisFromEvent(dataDrivenState.selectedEventId, filters);
@@ -820,26 +916,41 @@ if (briefPeriodText) briefPeriodText.textContent = `기준일 ${referenceAt.slic
 const processOverviewBridge = document.querySelector('#processOverview');
 if (processOverviewBridge) {
   const metricDefs = window.CogMockData.metricDefinitions;
+  // "자동"은 기간 내 이슈(없으면 주요 KPI)만, "직접 선택"은 체크 항목만,
+  // "전체"는 모든 항목을 보여준다. 체크 상태와 표/카드는 반드시 같은 목록을 쓴다.
+  const processOverviewState = { mode: 'auto' };
+  const primaryMetricIds = ['purifiedVolume', 'chemicalA', 'chemicalB', 'steamUsage', 'qualityContent', 'gasOutletTemp'];
   const grid = processOverviewBridge.querySelector('.process-kpi-grid');
   const checks = processOverviewBridge.querySelector('.metric-checks');
   const inputs = [...processOverviewBridge.querySelectorAll('[data-period-input]')];
   const table = processOverviewBridge.querySelector('.process-data-table');
+  const setCheckedMetricIds = (metricIds) => {
+    const metricIdSet = new Set(metricIds);
+    checks.querySelectorAll('input').forEach((input) => { input.checked = metricIdSet.has(input.value); });
+  };
   const renderProcessOverview = () => {
     const filters = readPeriodRange(processOverviewBridge, inputs);
     const summaries = window.CogDataService.getKpiSummaries(filters).filter((item) => metricDefs.some((definition) => definition.id === item.id));
-    const selectedInputs = [...checks.querySelectorAll('input:checked')];
-    const selectedIds = selectedInputs.map((input) => input.value);
-    processOverviewBridge.querySelector('.visible-count').textContent = `${selectedInputs.length}개`;
-    grid.innerHTML = summaries.filter((item) => !selectedIds.length || selectedIds.includes(item.id)).map((item) => `<article class="process-kpi-card ${statusClass(item.status)}"><div><b>${item.label}</b><strong>${formatMetricValue(item)}</strong></div>${trendSvg(item)}<small>${standardText(item)}</small><span>${statusLabel(item.status)}</span></article>`).join('');
+    const issueIds = window.CogDataService.getPeriodIssues(filters).slice(0, 3).map((item) => item.id);
+    const defaultIds = issueIds.length ? issueIds : primaryMetricIds;
+    const allMetricIds = metricDefs.map((item) => item.id);
+    if (processOverviewState.mode === 'auto') setCheckedMetricIds(defaultIds);
+    if (processOverviewState.mode === 'all') setCheckedMetricIds(allMetricIds);
+    const selectedIds = [...checks.querySelectorAll('input:checked')].map((input) => input.value);
+    const visibleIds = processOverviewState.mode === 'all' ? allMetricIds : selectedIds;
+    const visible = summaries.filter((item) => visibleIds.includes(item.id));
+    processOverviewBridge.querySelector('.visible-count').textContent = `${visible.length}개`;
+    const selectAllButton = processOverviewBridge.querySelector('[data-select-all]');
+    if (selectAllButton) selectAllButton.textContent = processOverviewState.mode === 'all' ? '주요 KPI 보기' : '전체 지표 보기';
+    grid.innerHTML = visible.map((item) => `<article class="process-kpi-card ${statusClass(item.status)}"><div><b>${item.label}</b><strong>${formatMetricValue(item)}</strong></div>${trendSvg(item)}<small>${standardText(item)}</small><span>${statusLabel(item.status)}</span></article>`).join('');
     const observations = window.CogDataService.getObservations(filters);
-    const visible = summaries.filter((item) => !selectedIds.length || selectedIds.includes(item.id));
     table.querySelector('thead').innerHTML = `<tr><th>일자</th>${visible.map((item) => `<th>${item.label}</th>`).join('')}</tr><tr class="process-table-units"><th>단위</th>${visible.map((item) => `<th>${item.unit}</th>`).join('')}</tr>`;
     table.querySelector('tbody').innerHTML = observations.map((row) => `<tr><td>${row.period}</td>${visible.map((item) => `<td>${row.metrics[item.id].toLocaleString(undefined, { maximumFractionDigits: item.decimals })}</td>`).join('')}</tr>`).join('');
   };
   checks.innerHTML = metricDefs.map((item) => `<label><input type="checkbox" value="${item.id}" checked>${item.label}</label>`).join('');
-  checks.addEventListener('change', renderProcessOverview);
+  checks.addEventListener('change', () => { processOverviewState.mode = 'custom'; renderProcessOverview(); });
   processOverviewBridge.querySelector('[data-select-all]')?.addEventListener('click', () => {
-    checks.querySelectorAll('input').forEach((input) => { input.checked = true; });
+    processOverviewState.mode = processOverviewState.mode === 'all' ? 'auto' : 'all';
     renderProcessOverview();
   });
   processOverviewBridge.querySelector('[data-process-query]')?.addEventListener('click', () => { renderProcessOverview(); refreshDataDrivenViews(readPeriodRange(processOverviewBridge, inputs)); });
@@ -874,7 +985,7 @@ const overviewHead = document.querySelector('#overview .page-head');
 if (overviewHead) {
   const overviewPeriodFilter = document.querySelector('#overview .overview-period-filter') || document.createElement('article');
   overviewPeriodFilter.className = 'card overview-period-filter';
-  overviewPeriodFilter.innerHTML = '<div class="impact-period-label"><b>통합현황 조회 기간</b><span>선택 기간의 KPI·손익영향을 함께 조회합니다.</span></div><div class="impact-period-inputs"><label>시작<input data-period-input type="date" value="2025-12-31"></label><label>종료<input data-period-input type="date" value="2025-12-31"></label><label class="time-mode"><input data-time-mode type="checkbox"> 시간 단위 조회</label></div><div class="impact-quick"><button type="button" data-overview-range="1">전일</button><button type="button" data-overview-range="7">전 7일</button><button type="button" data-overview-range="30">전 30일</button></div><button class="primary" type="button">조회</button><small class="impact-period-selected"></small>';
+  overviewPeriodFilter.innerHTML = '<div class="impact-period-label"><b>통합현황 조회 기간</b><span>선택 기간의 KPI·손익영향을 함께 조회합니다.</span></div><div class="impact-period-inputs"><label>시작<input data-period-input type="date" value="2025-12-31"></label><label>종료<input data-period-input type="date" value="2025-12-31"></label><label class="time-mode time-mode-control"><input data-time-mode type="checkbox"> 시간 단위 조회</label></div><div class="impact-quick"><button type="button" data-overview-range="1">전일</button><button type="button" data-overview-range="7">전 7일</button><button type="button" data-overview-range="30">전 30일</button></div><button class="primary" type="button">조회</button><small class="impact-period-selected"></small>';
   overviewHead.insertAdjacentElement('afterend', overviewPeriodFilter);
   const inputs = [...overviewPeriodFilter.querySelectorAll('[data-period-input]')];
   inputs[0].value = dataDrivenState.start.slice(0, 10);
@@ -894,6 +1005,7 @@ if (overviewHead) {
 }
 
 const processAnalysis = document.querySelector('#process');
+processAnalysis?.querySelector('.time-mode')?.remove();
 if (processAnalysis) installPeriodMode(processAnalysis, [...processAnalysis.querySelectorAll('input[data-period-input]')]);
 function syncProcessMetricChips() {
   if (!processAnalysis) return;
@@ -923,7 +1035,7 @@ function initialiseProcessMetricControls() {
   const [groupSelect, metricSelect] = processAnalysis.querySelectorAll('.select-row select');
   const definitions = window.CogMockData.metricDefinitions;
   // Read both select lists from the shared metric catalogue: no process variable is screen-local.
-  const kpiMetricIds = new Set(['purifiedVolume', 'aUnit', 'bUnit', 'cUnit', 'chemicalA', 'chemicalB', 'steamUsage', 'qualityContent']);
+  const kpiMetricIds = new Set(['purifiedVolume', 'aUnit', 'bUnit', 'cUnit', 'chemicalA', 'chemicalB', 'qualityContent']);
   const groups = {
     '품질 · 효율성 지표': definitions.filter((definition) => kpiMetricIds.has(definition.id)).map((definition) => definition.id),
     '공정 변수': definitions.filter((definition) => !kpiMetricIds.has(definition.id)).map((definition) => definition.id),
@@ -991,12 +1103,17 @@ function renderProcessRecentTrend(series, status) {
   return `<div class="recent-trend ${status}"><svg viewBox="0 0 144 42" aria-label="최근 추이"><line x1="0" y1="35" x2="144" y2="35"/><path d="${path}"/></svg><small>최근 ${points.length}개 시점</small></div>`;
 }
 
-function runProcessComparison({ syncSharedViews = false } = {}) {
+function runProcessComparison({ syncSharedViews = false, selectRelatedMetrics = false } = {}) {
   if (!processAnalysis) return;
   const inputs = [...processAnalysis.querySelectorAll('input[data-period-input]')];
   const timeMode = Boolean(processAnalysis.querySelector('[data-time-mode]')?.checked);
   const base = timeMode ? { start: inputs[0].value, end: inputs[1].value, granularity: 'hour' } : { start: inputs[0].value, end: inputs[1].value, granularity: 'day' };
   const compare = timeMode ? { start: inputs[2].value, end: inputs[3].value, granularity: 'hour' } : { start: inputs[2].value, end: inputs[3].value, granularity: 'day' };
+  const issue = window.CogDataService.getPeriodIssues(base)[0];
+  if (selectRelatedMetrics && issue) {
+    processAnalysisState.metricIds = [issue.id, ...(processAnalysisRelatedMetrics[issue.id] || [])];
+    syncProcessMetricChips();
+  }
   const definitions = processAnalysisState.metricIds;
   const values = (range, metricId) => window.CogDataService.getMetricSeries(metricId, range).map((row) => row.value);
   const average = (items) => items.length ? items.reduce((sum, value) => sum + value, 0) / items.length : 0;
@@ -1016,12 +1133,36 @@ function runProcessComparison({ syncSharedViews = false } = {}) {
     row.children[4].innerHTML = renderProcessRecentTrend(series, status);
     row.children[4].setAttribute('aria-label', `${definition?.label || metricId} 최근 추이`);
   });
+  const note = processAnalysis.querySelector('.analysis-note');
+  if (note) {
+    const relatedEvidence = (processAnalysisRelatedMetrics[issue?.id] || []).map((metricId) => {
+      const definition = window.CogMockData.metricDefinitions.find((item) => item.id === metricId);
+      if (!definition) return null;
+      const baseValue = average(values(base, metricId));
+      const compareValue = average(values(compare, metricId));
+      if (!Number.isFinite(baseValue) || !Number.isFinite(compareValue)) return null;
+      const difference = baseValue - compareValue;
+      return { definition, baseValue, compareValue, difference };
+    }).filter(Boolean);
+    const relatedLabels = relatedEvidence.map((item) => item.definition.label);
+    const evidenceText = relatedEvidence.map((item) => `${item.definition.label} ${formatMetricNumber(item.compareValue, item.definition)}${item.definition.unit} → ${formatMetricNumber(item.baseValue, item.definition)}${item.definition.unit} (${formatMetricNumber(item.difference, item.definition, true)}${item.definition.unit})`).join(' · ');
+    const reducedEvidence = relatedEvidence.filter((item) => item.difference < 0).map((item) => item.definition.label);
+    const cause = reducedEvidence.length
+      ? `${reducedEvidence.join(', ')}의 동반 저하가 확인되어 해당 스팀 모듈의 공급량 또는 분배 상태 영향으로 추정됩니다.`
+      : `${relatedLabels.join(', ') || '설정된 관련 공정지표'}의 변화를 함께 확인해야 합니다. 현재 값만으로 확정 원인은 판단할 수 없습니다.`;
+    const priority = relatedLabels.length
+      ? `${relatedLabels.join(', ')}의 공급량·분배 상태와 제어 설정을 우선 점검하세요.`
+      : `${issue?.label || '이탈 지표'}의 운전 조건과 계측값을 우선 점검하세요.`;
+    note.innerHTML = issue
+      ? `<b>분석 요약</b><div class="analysis-insights"><p class="analysis-cause"><strong>추정 원인</strong><span>${cause}</span></p><p class="analysis-evidence"><strong>관련 지표 근거</strong><span>${evidenceText || '설정된 관련 공정지표의 비교 데이터가 없습니다.'}</span></p><p class="analysis-priority"><strong>점검 우선순위</strong><span>${priority}</span></p></div><small class="analysis-basis"><strong>분석 기준</strong> 선택 기간의 관리기준 이탈과 설정된 변수 관계, 기준·비교 기간 평균값을 사용했습니다. 확정 원인 판정은 아닙니다.</small>`
+      : '<b>분석 요약</b><div class="analysis-insights"><p class="analysis-cause"><strong>추정 원인</strong><span>선택 기간에 관리기준 이탈이 없어 특정 원인을 추정하지 않습니다.</span></p><p class="analysis-priority"><strong>점검 우선순위</strong><span>선택 지표의 추이를 계속 확인하세요.</span></p></div><small class="analysis-basis"><strong>분석 기준</strong> 선택 기간의 관리기준 이탈과 설정된 변수 관계, 기준·비교 기간 평균값을 사용했습니다.</small>';
+  }
   if (syncSharedViews) refreshDataDrivenViews(base);
 }
 if (processAnalysis) {
   initialiseProcessMetricControls();
   processAnalysis.querySelectorAll('.quick button').forEach((button) => button.addEventListener('click', () => applyProcessQuickRange(button.textContent.trim())));
-  processAnalysis.querySelector('.primary.full')?.addEventListener('click', () => runProcessComparison({ syncSharedViews: true }));
+  processAnalysis.querySelector('.primary.full')?.addEventListener('click', () => runProcessComparison({ syncSharedViews: true, selectRelatedMetrics: true }));
   processAnalysis.querySelector('.result .card-title .primary')?.addEventListener('click', (event) => {
     const note = processAnalysis.querySelector('.analysis-note');
     const rows = [...processAnalysis.querySelectorAll('.result tbody tr')];
@@ -1039,13 +1180,52 @@ function renderProcessStandardAnalysis() {
   const processInputs = [...document.querySelectorAll('#process input[data-period-input]')];
   const filters = processInputs.length >= 2 ? { start: processInputs[0].value, end: processInputs[1].value } : dataDrivenState;
   const summaries = window.CogDataService.getKpiSummaries(filters).filter((item) => processAnalysisState.metricIds.includes(item.id));
-  const rows = summaries.map((item) => `<tr><td><b>${item.label}</b></td><td>${formatMetricValue(item)}</td><td><b>${item.standard.effectiveFrom}</b></td><td>${standardText(item)}</td><td>${item.standard.warningMax !== undefined ? `상한 ${formatStandardValue(item.standard.warningMax, item)}` : `하한 ${formatStandardValue(item.standard.warningMin, item)}`}</td><td><span class="status ${statusClass(item.status)}">${statusLabel(item.status)}</span></td><td class="${item.status === 'abnormal' ? 'red-text' : item.status === 'warning' ? 'orange' : 'positive'}">${formatStandardVariance(item)}</td></tr>`).join('');
-  const costRows = window.CogDataService.groupCostByItem(filters).map((row) => {
-    const unit = row.costItem.includes('스팀') ? 't' : row.usageUnit.replace('Nm3', 'Nm³');
+  const steamModuleIds = ['steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06'];
+  const steamModules = summaries.filter((item) => steamModuleIds.includes(item.id));
+  const standardRow = (item, detail = false) => `<tr${detail ? ' class="steam-detail-row"' : ''}><td><b>${detail ? '↳ ' : ''}${item.label}</b>${item.id === 'steamUsage' ? ` <button type="button" class="pill" data-toggle-steam-details>${processStandardState.steamDetailsOpen ? '세부 접기 ▲' : '세부 보기 ▼'}</button>` : ''}</td><td>${formatMetricValue(item)}</td><td><b>${item.standard.effectiveFrom}</b></td><td>${standardText(item)}</td><td>${item.standard.warningMax !== undefined ? `상한 ${formatStandardValue(item.standard.warningMax, item)}` : `하한 ${formatStandardValue(item.standard.warningMin, item)}`}</td><td><span class="status ${statusClass(item.status)}">${statusLabel(item.status)}</span></td><td class="${item.status === 'abnormal' ? 'red-text' : item.status === 'warning' ? 'orange' : 'positive'}">${formatStandardVariance(item)}</td></tr>`;
+  const rows = summaries.filter((item) => !steamModuleIds.includes(item.id)).map((item) => standardRow(item) + (item.id === 'steamUsage' && processStandardState.steamDetailsOpen ? steamModules.map((module) => standardRow(module, true)).join('') : '')).join('');
+  const groupedCostItems = window.CogDataService.groupCostByItem(filters);
+  const gasCost = groupedCostItems.find((row) => row.costItem.includes('가스'));
+  const chemicalUnitRow = (costItem) => {
+    const chemicalCost = window.CogDataService.groupCostByItem({ ...filters, costItem })[0];
+    if (!chemicalCost || !gasCost || !gasCost.targetUsage || !gasCost.actualUsage) return chemicalCost;
+    return {
+      ...chemicalCost,
+      costItem: `${costItem} 원단위`,
+      usageUnit: 'kg/천Nm³',
+      targetUsage: chemicalCost.targetUsage * 1000 / gasCost.targetUsage,
+      actualUsage: chemicalCost.actualUsage * 1000 / gasCost.actualUsage,
+    };
+  };
+  const costItems = [
+    gasCost && { ...gasCost, costItem: '정제량', usageUnit: '천Nm³', targetUsage: gasCost.targetUsage / 1000, actualUsage: gasCost.actualUsage / 1000 },
+    chemicalUnitRow('약품 A'),
+    chemicalUnitRow('약품 B'),
+    groupedCostItems.find((row) => row.costItem.includes('스팀')),
+  ].filter(Boolean);
+  const steamCost = costItems.find((row) => row.costItem.includes('스팀'));
+  const costRows = costItems.filter((row) => !row.costItem.includes('스팀')).map((row) => {
+    const unit = row.usageUnit.replace('Nm3', 'Nm³');
     const delta = row.actualUsage - row.targetUsage;
-    return `<tr><td><b>${row.costItem}</b></td><td>${row.targetUsage.toLocaleString(undefined, { maximumFractionDigits: 1 })} ${unit}</td><td>${row.actualUsage.toLocaleString(undefined, { maximumFractionDigits: 1 })} ${unit}</td><td class="${delta > 0 ? 'red-text' : 'positive'}">${delta >= 0 ? '+' : ''}${delta.toLocaleString(undefined, { maximumFractionDigits: 1 })} ${unit}</td><td class="${row.variance >= 0 ? 'positive' : 'red-text'}">${row.variance >= 0 ? '+' : ''}${row.variance.toFixed(1)}백만원</td></tr>`;
+    const fractionDigits = unit === 'kg/천Nm³' ? 3 : 1;
+    const formatUsage = (value) => value.toLocaleString(undefined, { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits });
+    return `<tr><td><b>${row.costItem}</b></td><td>${formatUsage(row.targetUsage)} ${unit}</td><td>${formatUsage(row.actualUsage)} ${unit}</td><td class="${delta > 0 ? 'red-text' : 'positive'}">${delta >= 0 ? '+' : ''}${formatUsage(delta)} ${unit}</td><td class="${row.variance >= 0 ? 'positive' : 'red-text'}">${row.variance >= 0 ? '+' : ''}${row.variance.toFixed(1)}백만원</td></tr>`;
   }).join('');
-  target.innerHTML = `<div class="card-title"><div><h2>조업 관리기준 대비 분석</h2><p>선택 기간의 운전 지표를 적용 시점별 조업 관리기준과 비교합니다.</p></div></div><div class="standard-application"><b>기준 구분 안내</b><span><b>조업 관리기준</b>은 운전 상태와 정상·주의·이상을 판정하는 기준입니다. <b>손익 KPI 기준</b>은 원가·수익 계획 대비 손익을 계산하는 목표량입니다. 목적·기준기간·단위가 달라 같은 값이 아닐 수 있습니다.</span></div><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>지표</th><th>선택 기간 실적</th><th>적용 기준일</th><th>정상 범위</th><th>주의 기준</th><th>판정</th><th>기준 대비</th></tr></thead><tbody>${rows}</tbody></table></div><h3 class="usage-analysis-title">손익 KPI 기준 대비</h3><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>손익 KPI 항목</th><th>손익 목표량</th><th>선택 기간 실제</th><th>손익 KPI 대비 증감</th><th>손익 영향</th></tr></thead><tbody>${costRows}</tbody></table></div>`;
+  const steamSamples = window.CogDataService.getCostRecords(filters).filter((row) => row.costItem.includes('스팀'));
+  const steamRate = steamSamples.length ? {
+    target: steamSamples.reduce((sum, row) => sum + row.targetUsage, 0) / steamSamples.length,
+    actual: steamSamples.reduce((sum, row) => sum + row.actualUsage, 0) / steamSamples.length,
+  } : null;
+  const formatSteamRate = (value) => `${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} t/h`;
+  const steamDelta = steamRate ? steamRate.actual - steamRate.target : 0;
+  const steamRow = steamCost && steamRate ? `<tr title="선택 기간 평균 t/h"><td><b>스팀 사용량</b> <button type="button" class="pill" data-toggle-steam-details>${processStandardState.steamDetailsOpen ? '세부 접기 ▲' : '세부 보기 ▼'}</button></td><td>${formatSteamRate(steamRate.target)}</td><td>${formatSteamRate(steamRate.actual)}</td><td class="${steamDelta > 0 ? 'red-text' : 'positive'}">${steamDelta >= 0 ? '+' : ''}${formatSteamRate(steamDelta)}</td><td class="${steamCost.variance >= 0 ? 'positive' : 'red-text'}">${steamCost.variance >= 0 ? '+' : ''}${steamCost.variance.toFixed(1)}백만원</td></tr>` : '';
+  const steamDetailRows = processStandardState.steamDetailsOpen && steamCost ? `<tr class="steam-detail-row"><td><b>↳ 선택 기간 누적 사용량</b></td><td>${steamCost.targetUsage.toLocaleString(undefined, { maximumFractionDigits: 1 })} t</td><td>${steamCost.actualUsage.toLocaleString(undefined, { maximumFractionDigits: 1 })} t</td><td>${steamCost.actualUsage - steamCost.targetUsage >= 0 ? '+' : ''}${(steamCost.actualUsage - steamCost.targetUsage).toLocaleString(undefined, { maximumFractionDigits: 1 })} t</td><td>선택 기간 누적 기준</td></tr>${steamModules.map((item) => `<tr class="steam-detail-row"><td><b>↳ ${item.label}</b></td><td>${formatStandardValue(item.standard.target, item)}</td><td>${formatStandardValue(item.value, item)}</td><td>${item.targetVariance >= 0 ? '+' : ''}${formatStandardValue(item.targetVariance, item)}</td><td>-</td></tr>`).join('')}` : '';
+  const fullCostRows = `${costRows}${steamRow}${steamDetailRows}`;
+  target.innerHTML = `<div class="card-title"><div><h2>조업 관리기준 대비 분석</h2><p>선택 기간의 운전 지표를 적용 시점별 조업 관리기준과 비교합니다.</p></div></div><div class="standard-application"><b>기준 구분 안내</b><span><b>조업 관리기준</b>은 운전 상태와 정상·주의·이상을 판정하는 기준입니다. <b>손익 KPI 기준</b>은 원가·수익 계획 대비 손익을 계산하는 목표량입니다. 목적·기준기간·단위가 달라 같은 값이 아닐 수 있습니다.</span></div><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>지표</th><th>선택 기간 실적</th><th>적용 기준일</th><th>정상 범위</th><th>주의 기준</th><th>판정</th><th>기준 대비</th></tr></thead><tbody>${rows}</tbody></table></div><h3 class="usage-analysis-title">손익 KPI 기준 대비</h3><div class="standard-table-scroll"><table class="simple-table compact"><thead><tr><th>손익 KPI 항목</th><th>손익 목표량</th><th>선택 기간 실제</th><th>손익 KPI 대비 증감</th><th>손익 영향</th></tr></thead><tbody>${fullCostRows}</tbody></table></div>`;
+  target.querySelectorAll('[data-toggle-steam-details]').forEach((button) => button.addEventListener('click', () => {
+    processStandardState.steamDetailsOpen = !processStandardState.steamDetailsOpen;
+    renderProcessStandardAnalysis();
+  }));
 }
 renderProcessStandardAnalysis();
 
@@ -1082,6 +1262,8 @@ function renderCopilotTopic(metricId) {
   const copilot = document.querySelector('#brief .copilot');
   if (!copilot) return;
   const periodIssues = window.CogDataService.getPeriodIssues(dataDrivenState);
+  const occurrences = window.CogDataService.getPeriodIssueOccurrences(dataDrivenState);
+  if (occurrences.length) config.conclusion += ' 기간 내 이탈 기록: ' + occurrences.map(formatPeriodIssueOccurrence).join(' · ') + '.';
   if (!periodIssues.length) {
     const issue = copilot.querySelector('.copilot-grid > div:first-child');
     if (issue) issue.innerHTML = '<h3>주요 핵심 이슈</h3><p>선택 기간에 관리기준 이탈이나 이상 항목이 없습니다.</p><div class="inline-standard"><b>정상 운영</b></div><h3>결론</h3><p>선택 기간의 모든 지표가 관리기준 범위 안에 있습니다.</p>';
@@ -1092,9 +1274,9 @@ function renderCopilotTopic(metricId) {
     return;
   }
   const issue = copilot.querySelector('.copilot-grid > div:first-child');
-  if (issue) issue.innerHTML = `<h3>주요 핵심 이슈</h3><p>${config.title}의 현재값과 관리기준 이탈 수준을 확인합니다.</p><div class="inline-standard"><span>현재값 <b>${formatMetricValue(summary)}</b></span><span>관리 기준 <b>${standardText(summary)}</b></span><span>기준 대비 <b class="${summary.status === 'abnormal' ? 'red-text' : summary.status === 'warning' ? 'orange' : 'positive'}">${summary.variance >= 0 ? '+' : ''}${summary.variance}${summary.unit}</b></span></div><h3>결론</h3><p>${config.conclusion}</p><p class="disclaimer">예상 원인·점검 후보이며 확정 원인이 아닙니다.</p>`;
+  if (issue) issue.innerHTML = `<h3>주요 핵심 이슈</h3><p>${config.title}의 현재값과 관리기준 이탈 수준을 확인합니다.</p><div class="inline-standard"><span>현재값 <b>${formatMetricValue(summary)}</b></span><span>관리 기준 <b>${standardText(summary)}</b></span><span>기준 대비 <b class="${summary.status === 'abnormal' ? 'red-text' : summary.status === 'warning' ? 'orange' : 'positive'}">${formatMetricDelta(summary.variance, summary)}</b></span></div><h3>결론</h3><p>${config.conclusion}</p><p class="disclaimer">예상 원인·점검 후보이며 확정 원인은 아닙니다.</p>`;
   const evidence = copilot.querySelector('.copilot-grid > div:last-child');
-  if (evidence) evidence.innerHTML = `<h3>확인 근거</h3><ul><li>${summary.label}: 현재 ${formatMetricValue(summary)}, ${standardText(summary)} 대비 <b>${summary.variance >= 0 ? '+' : ''}${summary.variance}${summary.unit}</b></li><li>목표 ${summary.standard.target}${summary.unit} 대비 <b>${summary.targetVariance >= 0 ? '+' : ''}${summary.targetVariance}${summary.unit}</b></li><li>적용 기준일: <b>${summary.standard.effectiveFrom}</b></li></ul><h3>권장 점검</h3><ol><li>${summary.label} 계측값과 시간대별 편차 확인</li><li>연관 공정 변수 및 설비 상태 확인</li><li>다음 조업일까지 관리기준 복귀 여부 모니터링</li></ol>`;
+  if (evidence) evidence.innerHTML = `<h3>확인 근거</h3><ul><li>${summary.label}: 현재 ${formatMetricValue(summary)}, ${standardText(summary)} 대비 <b>${formatMetricDelta(summary.variance, summary)}</b></li><li>목표 ${formatStandardValue(summary.standard.target, summary)} 대비 <b>${formatMetricDelta(summary.targetVariance, summary)}</b></li><li>적용 기준일: <b>${summary.standard.effectiveFrom}</b></li></ul><h3>권장 점검</h3><ol><li>${summary.label} 계측값과 시간대별 편차 확인</li><li>연관 공정 변수 및 설비 상태 확인</li><li>다음 조업일까지 관리기준 복귀 여부 모니터링</li></ol>`;
   const related = document.querySelector('#brief .related-metrics');
   if (related) related.innerHTML = [summary, ...window.CogDataService.getKpiSummaries(dataDrivenState).filter((item) => ['steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06', 'gasOutletTemp', 'equipmentPressure'].includes(item.id))].map((item) => `<div class="related ${statusClass(item.status)}"><b>${item.label}</b><strong>${formatMetricValue(item)}</strong>${trendSvg(item)}<small>${standardText(item)}</small></div>`).join('');
 }
@@ -1119,18 +1301,23 @@ function renderDiagnosisCandidateCard(diagnosis, event, primary) {
 function renderDiagnosisFromEvent(eventId = dataDrivenState.selectedEventId, filters = { start: dataDrivenState.start, end: dataDrivenState.end }) {
   const diagnosis = document.querySelector('#diagnosis');
   if (!diagnosis) return;
-  const summaries = window.CogDataService.getKpiSummaries(filters);
-  const issueSummaries = window.CogDataService.getPeriodIssues(filters);
   const events = window.CogDataService.getEvents(filters);
   const event = events.find((item) => item.id === eventId) || events[0];
   if (event) dataDrivenState.selectedEventId = event.id;
+  const analysisFilters = event
+    ? { ...filters, start: [filters.start, event.startAt].filter(Boolean).sort().at(-1), end: [filters.end, event.endAt].filter(Boolean).sort()[0] }
+    : filters;
+  const summaries = window.CogDataService.getKpiSummaries(analysisFilters);
+  const issueSummaries = window.CogDataService.getPeriodIssues(analysisFilters);
   const findingIds = issueSummaries.map((item) => item.id);
   const findings = findingIds.map((id) => summaries.find((item) => item.id === id)).filter(Boolean);
   const primary = findings[0];
   const chip = diagnosis.querySelector('.event-chip');
   if (chip) chip.textContent = event ? `이벤트 ${event.id} ▾` : findings.length ? `이상 항목 ${findings.length}건 ▾` : '이상 없음';
   const period = diagnosis.querySelector('.page-head p');
-  if (period) period.textContent = `${filters.start.replaceAll('-', '.')} 07:00 ~ ${filters.end.replaceAll('-', '.')} 07:00`;
+  if (period) period.textContent = event
+    ? `이벤트 분석 기간 ${analysisFilters.start.slice(0, 10).replaceAll('-', '.')} 07:00 ~ ${analysisFilters.end.slice(0, 10).replaceAll('-', '.')} 07:00`
+    : `${filters.start.replaceAll('-', '.')} 07:00 ~ ${filters.end.replaceAll('-', '.')} 07:00`;
   const hero = diagnosis.querySelector('.hero');
   renderDiagnosisCandidateCard(diagnosis, event, primary);
   const breach = diagnosis.querySelector('.breach-summary');
@@ -1156,9 +1343,9 @@ function renderDiagnosisFromEvent(eventId = dataDrivenState.selectedEventId, fil
     if (stats[0]) stats[0].textContent = primary.label;
     if (stats[1]) stats[1].textContent = event?.priority || (primary.status === 'abnormal' ? '높음' : '중간');
   }
-  if (breach) breach.innerHTML = findings.map((item) => `<div class="${statusClass(item.status)}"><span>${item.status === 'normal' ? '연관 항목' : '초과 항목'}</span><b>${item.label}</b><small>${formatMetricValue(item)} · 기준 대비 ${item.variance >= 0 ? '+' : ''}${item.variance}${item.unit}</small></div>`).join('');
+  if (breach) breach.innerHTML = findings.map((item) => `<div class="${statusClass(item.status)}"><span>${item.status === 'normal' ? '연관 항목' : '초과 항목'}</span><b>${item.label}</b><small>${formatMetricValue(item)} · 기준 대비 ${formatMetricDelta(item.variance, item)}</small></div>`).join('');
   const trend = diagnosis.querySelector('.trend-summary');
-  if (trend) trend.innerHTML = `<span>관리 기준 <b>${standardText(primary)}</b></span><span>목표 <b>${primary.standard.target}${primary.unit}</b></span><span>현재 실적 <b class="${primary.status === 'abnormal' ? 'red-text' : primary.status === 'warning' ? 'orange' : 'positive'}">${formatMetricValue(primary)}</b></span><span>기준 대비 <b class="${primary.status === 'abnormal' ? 'red-text' : primary.status === 'warning' ? 'orange' : 'positive'}">${primary.variance >= 0 ? '+' : ''}${primary.variance}${primary.unit}</b></span>`;
+  if (trend) trend.innerHTML = `<span>관리 기준 <b>${standardText(primary)}</b></span><span>목표 <b>${formatStandardValue(primary.standard.target, primary)}</b></span><span>현재 실적 <b class="${primary.status === 'abnormal' ? 'red-text' : primary.status === 'warning' ? 'orange' : 'positive'}">${formatMetricValue(primary)}</b></span><span>기준 대비 <b class="${primary.status === 'abnormal' ? 'red-text' : primary.status === 'warning' ? 'orange' : 'positive'}">${formatMetricDelta(primary.variance, primary)}</b></span>`;
   const series = primary.series.slice(-8).map((item) => item.value);
   const low = Math.min(...series), spread = Math.max(...series) - low || 1;
   const path = series.map((value, index) => `${index ? 'L' : 'M'}${index * (760 / (series.length - 1 || 1))} ${155 - ((value - low) / spread) * 120}`).join(' ');
@@ -1173,7 +1360,7 @@ function renderDiagnosisFromEvent(eventId = dataDrivenState.selectedEventId, fil
     return `<div class="related ${statusClass(item.status)}"><b>${item.label}</b><strong>${formatMetricValue(item)}</strong>${trendSvg(item)}<small>${standardText(item)}</small></div>`;
   }).join('');
   const evidence = diagnosis.querySelector('.two-col .card:first-child');
-  if (evidence) evidence.innerHTML = `<h2>이상 확인 근거</h2>${findings.map((item) => `<div class="evidence"><b>${item.label} · 기준 대비 ${item.variance >= 0 ? '+' : ''}${item.variance}${item.unit}</b><p>${standardText(item)} 기준으로 ${statusLabel(item.status)} 상태입니다.</p></div>`).join('')}`;
+  if (evidence) evidence.innerHTML = `<h2>이상 확인 근거</h2>${findings.map((item) => `<div class="evidence"><b>${item.label} · 기준 대비 ${formatMetricDelta(item.variance, item)}</b><p>${standardText(item)} 기준으로 ${statusLabel(item.status)} 상태입니다.</p></div>`).join('')}`;
   const checklist = diagnosis.querySelector('.checklist ol');
   if (checklist) checklist.innerHTML = findings.map((item) => `<li>${item.label} 계측값과 시간대별 편차를 확인합니다.</li>`).join('') + `<li>다음 조업일까지 ${primary.label}의 관리기준 복귀 여부를 모니터링합니다.</li>`;
 }
@@ -1248,7 +1435,6 @@ document.querySelector('#cost .page-head .filters button:last-child')?.addEventL
   const event = window.CogMockData.events.find((item) => item.id === dataDrivenState.selectedEventId);
   renderCostFromData({ start: event.startAt, end: event.endAt });
 });
-document.querySelector('#cost .profit-impact-detail .pill')?.remove();
 document.querySelector('#cost .impact-composition-card [data-profit-export]')?.addEventListener('click', exportProfitExcel);
 document.querySelector('#brief .page-head .filters')?.remove();
 

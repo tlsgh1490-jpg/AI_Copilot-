@@ -14,9 +14,14 @@ assert.strictEqual(CogMockData.dailyObservations.length, 731, 'KPI queries must 
 assert.ok(CogMockData.dailyObservations.every((row) => row.metrics.steamM01 !== undefined && row.metrics.steamM04 !== undefined), 'Individual steam M01~M04 values must come from the source data');
 assert.ok(!CogMockData.metricDefinitions.some((item) => item.id === 'steamM01M04'), 'The steam average must not be offered as a selectable metric');
 for (const metricId of ['aUnit', 'bUnit', 'cUnit']) {
-  assert.strictEqual(CogMockData.metricDefinitions.find((item) => item.id === metricId).unit, 'kg/t', `${metricId} must use kg/t`);
+  assert.strictEqual(CogMockData.metricDefinitions.find((item) => item.id === metricId).unit, 'kg/원료(ton)', `${metricId} must identify the raw-material basis`);
 }
+for (const metricId of ['chemicalA', 'chemicalB']) {
+  assert.strictEqual(CogMockData.metricDefinitions.find((item) => item.id === metricId).unit, 'kg/천Nm³', `${metricId} must use the supplied gas-volume unit basis`);
+}
+assert.strictEqual(CogMockData.metricDefinitions.find((item) => item.id === 'qualityContent').unit, 'g/Nm³', 'Quality content must use the workbook concentration unit');
 assert.strictEqual(CogMockData.metricDefinitions.find((item) => item.id === 'steamUsage').unit, 't/h', 'Total steam KPI must use t/h display units');
+assert.strictEqual(CogDataService.getActiveStandard('steamM01', '2025-09-11').normalMin, 2.355, 'Steam module standards must use the same t/h scale as KPI values');
 for (const metricId of ['steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06']) {
   assert.strictEqual(CogMockData.metricDefinitions.find((item) => item.id === metricId).unit, 't/h', `${metricId} must use hourly flow units`);
 }
@@ -36,7 +41,7 @@ assert.strictEqual(costAfter.variance, +(costAfter.actualProfitImpact - costAfte
 
 const twoDayCost = CogDataService.getCostSummary({ start: '2025-12-01', end: '2025-12-02' });
 const weekCost = CogDataService.getCostSummary({ start: '2025-12-01', end: '2025-12-08' });
-assert.ok(weekCost.actualProfitImpact > twoDayCost.actualProfitImpact, 'Daily cost queries must prorate monthly records by selected days');
+assert.ok(Math.abs(weekCost.actualProfitImpact) > Math.abs(twoDayCost.actualProfitImpact), 'Daily cost queries must prorate monthly records by selected days');
 
 const decemberFirst = CogDataService.getCostSummary({ start: '2025-12-01', end: '2025-12-01' });
 const decemberSecond = CogDataService.getCostSummary({ start: '2025-12-02', end: '2025-12-02' });
@@ -68,4 +73,7 @@ assert.ok(sourceEvent.some((event) => event.id === 'EVENT_2024_01'), 'Diagnosis 
 
 const eventIssues = CogDataService.getPeriodIssues({ start: '2025-09-11T07:00', end: '2025-09-11T07:00' });
 assert.ok(eventIssues.some((item) => item.id === 'qualityContent'), 'Period issue detection must inspect the selected source day, not a fixed event or fallback day');
+const septemberIssueOccurrences = CogDataService.getPeriodIssueOccurrences({ start: '2025-09-01', end: '2025-09-30' });
+const steamOccurrence = septemberIssueOccurrences.find((item) => item.metricId === 'steamUsage' && item.status === 'abnormal');
+assert.deepStrictEqual(JSON.parse(JSON.stringify(steamOccurrence && { start: steamOccurrence.start, end: steamOccurrence.end, days: steamOccurrence.days })), { start: '2025-09-10', end: '2025-09-17', days: 8 }, 'Period issue occurrences must retain the actual breach dates instead of only using the monthly average');
 console.log('Shared mock data mutation checks passed');

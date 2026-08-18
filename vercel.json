@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "outputDirectory": "frontend",
+  "functions": {
+    "api/copilot.js": {
+      "maxDuration": 30,
+      "includeFiles": "frontend/**"
+    }
+  }
+}

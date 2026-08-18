@@ -23,7 +23,7 @@ idx={v:i for i,v in enumerate(header)}
 ids=['purifiedVolume','aUnit','bUnit','cUnit','chemicalA','chemicalB','qualityContent','gasOutletTemp','steamM01','steamM02','steamM03','steamM04','steamM05','steamM06','equipmentPressure','gasFlow','lgRatio','equipmentTemp','oilFlow','heatTransfer','gasPressure','steamPressure','coolingWaterTemp','exhaustSpeed']
 daily_out={}
 for d in ['2024-01-01','2025-09-10','2025-12-31']:
- r=bydate[d]; m={k:r[idx[c]]/div for k,(c,div) in zip(ids,cols)}; [m.__setitem__(f'steamM0{i}',m[f'steamM0{i}']*10) for i in range(1,7)]; m['steamUsage']=sum(r[idx[f'KPI_U04_STEAM_M0{i}']] for i in range(1,7))*10; daily_out[d]=m
+ r=bydate[d]; m={k:r[idx[c]]/div for k,(c,div) in zip(ids,cols)}; m['steamUsage']=sum(r[idx[f'KPI_U04_STEAM_M0{i}']] for i in range(1,7)); daily_out[d]=m
 def op(ts):
  s=str(ts)[:19]; d=s[:10]; return d if int(s[11:13])>=7 else (datetime.date.fromisoformat(d)-datetime.timedelta(days=1)).isoformat()
 hour_ws=wb.worksheets[0]; hi=list(hour_ws.iter_rows(values_only=True)); hh=list(hi[0]); hours=[list(r) for r in hi[1:] if r and r[0] is not None]; hidx={v:i for i,v in enumerate(hh)}

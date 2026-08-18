@@ -7,7 +7,10 @@ const { createCopilotService } = require('./copilot-service');
 const { createNvidiaNarrativeGenerator } = require('./nvidia-narrative');
 
 const projectRoot = path.resolve(__dirname, '..');
-const defaultRelationships = ['steamM01', 'steamM02', 'steamM03', 'steamM04'].map((candidateMetricId) => ({ targetMetricId: 'qualityContent', candidateMetricId, direction: 'inverse' }));
+const defaultRelationships = [
+  ...['steamM01', 'steamM02', 'steamM03', 'steamM04'].map((candidateMetricId) => ({ targetMetricId: 'qualityContent', candidateMetricId, direction: 'inverse' })),
+  ...['steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06'].map((candidateMetricId) => ({ targetMetricId: 'steamUsage', candidateMetricId, direction: 'increase' })),
+];
 const mimeTypes = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const narrativeTimeoutMs = Number(process.env.COPILOT_NARRATIVE_TIMEOUT_MS || 20000);
 

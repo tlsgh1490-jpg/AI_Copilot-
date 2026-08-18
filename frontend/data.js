@@ -1,13 +1,13 @@
 (function () {
   const metricDefinitions = [
     { id: 'purifiedVolume', label: '정제량', unit: 'k Nm³', direction: 'range', decimals: 0 },
-    { id: 'aUnit', label: 'A 생산원단위', unit: 'kg/t', direction: 'upper', decimals: 1 },
-    { id: 'bUnit', label: 'B 생산원단위', unit: 'kg/t', direction: 'upper', decimals: 1 },
-    { id: 'cUnit', label: 'C 생산원단위', unit: 'kg/t', direction: 'upper', decimals: 1 },
-    { id: 'chemicalA', label: '약품 A 원단위', unit: 'kg/t', direction: 'upper', decimals: 1 },
-    { id: 'chemicalB', label: '약품 B 원단위', unit: 'kg/t', direction: 'upper', decimals: 1 },
+    { id: 'aUnit', label: 'A 생산원단위', unit: 'kg/원료(ton)', direction: 'upper', decimals: 1 },
+    { id: 'bUnit', label: 'B 생산원단위', unit: 'kg/원료(ton)', direction: 'upper', decimals: 1 },
+    { id: 'cUnit', label: 'C 생산원단위', unit: 'kg/원료(ton)', direction: 'upper', decimals: 1 },
+    { id: 'chemicalA', label: '약품 A 원단위', unit: 'kg/천Nm³', direction: 'upper', decimals: 3 },
+    { id: 'chemicalB', label: '약품 B 원단위', unit: 'kg/천Nm³', direction: 'upper', decimals: 3 },
     { id: 'steamUsage', label: '스팀 사용량', unit: 't/h', direction: 'range', decimals: 1 },
-    { id: 'qualityContent', label: '품질함량', unit: '%', direction: 'upper', decimals: 1 },
+    { id: 'qualityContent', label: '품질함량', unit: 'g/Nm³', direction: 'upper', decimals: 3 },
     { id: 'gasOutletTemp', label: '가스 출구온도', unit: '℃', direction: 'range', decimals: 1 },
     { id: 'steamM01', label: '스팀 M01', unit: 't/h', direction: 'range', decimals: 2 },
     { id: 'steamM02', label: '스팀 M02', unit: 't/h', direction: 'range', decimals: 2 },
@@ -40,10 +40,12 @@
     { effectiveFrom: '2024-01-01', metricId: 'steamUsage', normalMin: 35.7006, normalMax: 36.7467, warningMin: 35.4391, warningMax: 36.9303, target: 36.6412 },
     { effectiveFrom: '2024-01-01', metricId: 'qualityContent', normalMax: 2.30, warningMax: 2.35, target: 2.14 },
     { effectiveFrom: '2024-01-01', metricId: 'gasOutletTemp', normalMin: 135, normalMax: 145, warningMin: 132, warningMax: 148, target: 140 },
-    { effectiveFrom: '2024-01-01', metricId: 'steamM01', normalMin: 0.235, normalMax: 0.268, warningMin: 0.225, warningMax: 0.280, target: 0.250 },
-    { effectiveFrom: '2024-01-01', metricId: 'steamM02', normalMin: 0.235, normalMax: 0.268, warningMin: 0.225, warningMax: 0.280, target: 0.250 },
-    { effectiveFrom: '2024-01-01', metricId: 'steamM03', normalMin: 0.235, normalMax: 0.268, warningMin: 0.225, warningMax: 0.280, target: 0.250 },
-    { effectiveFrom: '2024-01-01', metricId: 'steamM04', normalMin: 0.235, normalMax: 0.268, warningMin: 0.225, warningMax: 0.280, target: 0.250 },
+    { effectiveFrom: '2024-01-01', metricId: 'steamM01', normalMin: 2.355, normalMax: 2.684, warningMin: 2.313, warningMax: 2.734, target: 2.500 },
+    { effectiveFrom: '2024-01-01', metricId: 'steamM02', normalMin: 2.356, normalMax: 2.688, warningMin: 2.317, warningMax: 2.731, target: 2.500 },
+    { effectiveFrom: '2024-01-01', metricId: 'steamM03', normalMin: 2.351, normalMax: 2.682, warningMin: 2.304, warningMax: 2.721, target: 2.500 },
+    { effectiveFrom: '2024-01-01', metricId: 'steamM04', normalMin: 2.351, normalMax: 2.682, warningMin: 2.308, warningMax: 2.733, target: 2.500 },
+    { effectiveFrom: '2024-01-01', metricId: 'steamM05', normalMin: 2.350, normalMax: 2.679, warningMin: 2.298, warningMax: 2.726, target: 2.500 },
+    { effectiveFrom: '2024-01-01', metricId: 'steamM06', normalMin: 2.353, normalMax: 2.689, warningMin: 2.308, warningMax: 2.737, target: 2.500 },
     { effectiveFrom: '2024-01-01', metricId: 'equipmentPressure', normalMin: 59.4, normalMax: 63.5, warningMin: 58.5, warningMax: 64.5, target: 61.0 },
     { effectiveFrom: '2025-07-01', metricId: 'steamUsage', normalMin: 35.7006, normalMax: 36.7467, warningMin: 35.4391, warningMax: 36.9303, target: 36.6412 },
     { effectiveFrom: '2024-01-01', metricId: 'gasFlow', normalMin: 4000, normalMax: 4600, warningMin: 3800, warningMax: 4800, target: 4300 },
@@ -60,11 +62,11 @@
   standards = standards.map((standard) => {
     if (standard.metricId === 'steamUsage') return {
       ...standard,
-      target: 15.075,
-      normalMin: 14.875,
-      normalMax: 15.305,
-      warningMin: 14.775,
-      warningMax: 15.405,
+      target: 15.116217,
+      normalMin: 14.458434,
+      normalMax: 15.777944,
+      warningMin: 14.350008,
+      warningMax: 15.890472,
     };
     return standard;
   });
@@ -73,8 +75,6 @@
     standards = standards.filter((standard) => standard.metricId !== 'steamM01M04');
     ['steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06'].forEach((metricId) => steamAverageStandards.forEach((standard) => standards.push({ ...standard, metricId })));
   }
-  // Apply the same tenfold display scale to module-level steam criteria after
-  // any legacy M01~M04 standard has been expanded to M01~M06.
   standards = standards.map((standard) => /^steamM0[1-6]$/.test(standard.metricId)
     ? Object.fromEntries(Object.entries(standard).map(([key, value]) => (
       ['target', 'normalMin', 'normalMax', 'warningMin', 'warningMax'].includes(key) && Number.isFinite(Number(value)) ? [key, +(Number(value) * 10).toFixed(6)] : [key, value]
@@ -130,56 +130,12 @@
   // The approved screens use the workbook-derived daily aggregation when it is available.
   if (window.CogWorkbookSource?.dailyObservations?.length) dailyObservations = window.CogWorkbookSource.dailyObservations;
   else if (window.CogSourceDailyObservations?.length) dailyObservations = window.CogSourceDailyObservations;
-  if (window.CogSourceSteamDaily) dailyObservations.forEach((row) => {
-    const steam = window.CogSourceSteamDaily[row.period] || {};
-    Object.assign(row.metrics, {
-      steamM01: steam.KPI_U04_STEAM_M01,
-      steamM02: steam.KPI_U04_STEAM_M02,
-      steamM03: steam.KPI_U04_STEAM_M03,
-      steamM04: steam.KPI_U04_STEAM_M04,
-      steamM05: steam.KPI_U04_STEAM_M05,
-      steamM06: steam.KPI_U04_STEAM_M06,
-    });
-  });
-  // Keep total steam usage and M01~M06 steam flows on the shared steam display
-  // unit (t/h) across KPI, process and cost-impact screens.
-  const legacyDailyTotals = new Map((window.CogSourceDailyObservations || []).map((row) => [row.period, row.metrics?.steamUsage]));
-  dailyObservations.forEach((row) => {
-    const modules = ['steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06'].map((id) => row.metrics?.[id]);
-    if (modules.every((value) => Number.isFinite(value))) row.metrics.steamUsage = +modules.reduce((sum, value) => sum + value, 0).toFixed(6);
-    else if (Number.isFinite(legacyDailyTotals.get(row.period))) row.metrics.steamUsage = legacyDailyTotals.get(row.period);
-  });
-
-  // The shared display unit for steam is t/h. The workbook source stores the
-  // corresponding steam flow at one-tenth of the approved display scale, so
-  // scale every steam observation consistently before any screen aggregates it.
-  const steamMetricIds = ['steamUsage', 'steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06'];
-  dailyObservations.forEach((row) => steamMetricIds.forEach((metricId) => {
-    if (Number.isFinite(row.metrics?.[metricId])) row.metrics[metricId] = +(row.metrics[metricId] * 10).toFixed(6);
-  }));
-
-  const scaleIndexedRow = (row, factors, predicate) => {
-    const values = Object.values(row);
-    if (!predicate(values)) return row;
-    const keys = Object.keys(row);
-    const next = { ...row };
-    Object.entries(factors).forEach(([index, factor]) => {
-      const key = keys[Number(index)];
-      const value = Number(next[key]);
-      if (key && Number.isFinite(value)) next[key] = +(value * factor).toFixed(6);
-    });
-    return next;
-  };
-  const scaleSteamMonthlyRows = (rows) => (rows || []).map((row) => scaleIndexedRow(row, { 3: 10, 4: 10, 5: 10, 6: 0.1, 7: 0.1 }, (values) => Number(values[6]) >= 1000000));
-  const scaleSteamEventRows = (rows) => (rows || []).map((row) => scaleIndexedRow(row, { 4: 10, 5: 0.1, 6: 0.1 }, (values) => Number(values[5]) >= 1000000));
-  const scaleSteamRateRows = (rows) => (rows || []).map((row) => scaleIndexedRow(row, { 2: 0.1, 4: 0.1 }, (values) => Number(values[2]) >= 1000000));
-  const scaledHourlyCostObservations = (window.CogWorkbookSource?.hourlyCostObservations || window.CogRawCostObservations || []).map((row) => ({
-    ...row,
-    steamUsage: Number.isFinite(Number(row.steamUsage)) ? +(Number(row.steamUsage) * 10).toFixed(6) : row.steamUsage,
-  }));
-  const scaledMonthlyCostImpacts = scaleSteamMonthlyRows(window.CogWorkbookSource?.monthlyCostImpacts || []);
-  const scaledEventCostImpacts = scaleSteamEventRows(window.CogWorkbookSource?.eventCostImpacts || []);
-  const scaledCostRates = scaleSteamRateRows(window.CogWorkbookSource?.costRates || []);
+  // The workbook source is the single KPI and cost-data source. Do not overlay
+  // a second steam daily file or recalculate its already supplied total.
+  const sourceHourlyCostObservations = window.CogWorkbookSource?.hourlyCostObservations || window.CogRawCostObservations || [];
+  const sourceMonthlyCostImpacts = window.CogWorkbookSource?.monthlyCostImpacts || [];
+  const sourceEventCostImpacts = window.CogWorkbookSource?.eventCostImpacts || [];
+  const sourceCostRates = window.CogWorkbookSource?.costRates || [];
 
   const costSeeds = {
     '자재비 절감': { actual: [4.1, 4.6, 3.8, 5.1, 5.7, 4.9, 6.3, 6.8, 5.4, 4.7, 5.0, 6.2], baseline: [3.6, 3.8, 4.0, 4.1, 4.5, 4.4, 4.8, 5.0, 4.9, 4.5, 4.6, 5.0], targetUsage: 480 },
@@ -217,11 +173,11 @@
     metricDefinitions,
     standards,
     dailyObservations,
-    costObservations: scaledHourlyCostObservations,
+    costObservations: sourceHourlyCostObservations,
     costTargets: window.CogRawCostTargets || {},
-    monthlyCostImpacts: scaledMonthlyCostImpacts,
-    eventCostImpacts: scaledEventCostImpacts,
-    costRates: scaledCostRates,
+    monthlyCostImpacts: sourceMonthlyCostImpacts,
+    eventCostImpacts: sourceEventCostImpacts,
+    costRates: sourceCostRates,
     dailyStatuses: window.CogWorkbookSource?.dailyStatuses || [],
     costRecords,
     events,

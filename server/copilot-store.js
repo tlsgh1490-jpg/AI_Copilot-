@@ -42,15 +42,16 @@ class CopilotStore {
     const observationCount = this.database.prepare('SELECT COUNT(*) AS count FROM observations').get().count;
     const standardCount = this.database.prepare('SELECT COUNT(*) AS count FROM standard_versions').get().count;
     const relationshipCount = this.database.prepare('SELECT COUNT(*) AS count FROM relationships').get().count;
-    if (observationCount && standardCount && (relationshipCount || !relationships.length)) return;
-    const observationStatement = this.database.prepare('INSERT INTO observations (period, metrics_json) VALUES (?, ?)');
-    const standardStatement = this.database.prepare('INSERT INTO standard_versions (metric_id, effective_from, standard_json) VALUES (?, ?, ?)');
-    const relationshipStatement = this.database.prepare('INSERT INTO relationships (target_metric_id, candidate_metric_id, relationship_json) VALUES (?, ?, ?)');
+    const observationStatement = this.database.prepare('INSERT INTO observations (period, metrics_json) VALUES (?, ?) ON CONFLICT(period) DO UPDATE SET metrics_json = excluded.metrics_json');
+    const standardStatement = this.database.prepare('INSERT INTO standard_versions (metric_id, effective_from, standard_json) VALUES (?, ?, ?) ON CONFLICT(metric_id, effective_from) DO UPDATE SET standard_json = excluded.standard_json');
+    const relationshipStatement = this.database.prepare('INSERT OR IGNORE INTO relationships (target_metric_id, candidate_metric_id, relationship_json) VALUES (?, ?, ?)');
     this.database.exec('BEGIN');
     try {
-      if (!observationCount) observations.forEach((item) => observationStatement.run(item.period, JSON.stringify(item.metrics)));
-      if (!standardCount) standards.forEach((item) => standardStatement.run(item.metricId, item.effectiveFrom || '0000-01-01', JSON.stringify({ ...item, effectiveFrom: item.effectiveFrom || '0000-01-01' })));
-      if (!relationshipCount) relationships.forEach((item) => relationshipStatement.run(item.targetMetricId, item.candidateMetricId, JSON.stringify(item)));
+      observations.forEach((item) => observationStatement.run(item.period, JSON.stringify(item.metrics)));
+      standards.forEach((item) => standardStatement.run(item.metricId, item.effectiveFrom || '0000-01-01', JSON.stringify({ ...item, effectiveFrom: item.effectiveFrom || '0000-01-01' })));
+      relationships.forEach((item) => relationshipStatement.run(item.targetMetricId, item.candidateMetricId, JSON.stringify(item)));
+      if (observationCount) this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'data_version'").run();
+      if (standardCount) this.database.prepare("UPDATE metadata SET value = value + 1 WHERE key = 'standards_version'").run();
       this.database.exec('COMMIT');
     } catch (error) {
       this.database.exec('ROLLBACK');

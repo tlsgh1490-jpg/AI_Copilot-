@@ -58,6 +58,30 @@
       return (!start || eventEnd >= start) && (!end || eventStart <= end);
     });
   }
+  function getPeriodIssueOccurrences(filters = {}) {
+    const issueStart = operationalDate(filters.start, filters.granularity);
+    const issueEnd = operationalDate(filters.end, filters.granularity);
+    const statuses = (data.dailyStatuses || [])
+      .filter((item) => inRange(item.period, issueStart, issueEnd) && item.status !== 'normal')
+      .sort((a, b) => a.metricId.localeCompare(b.metricId) || a.status.localeCompare(b.status) || a.period.localeCompare(b.period));
+    const nextDate = (period) => {
+      const date = new Date(period + 'T00:00:00Z');
+      date.setUTCDate(date.getUTCDate() + 1);
+      return date.toISOString().slice(0, 10);
+    };
+    const groups = [];
+    statuses.forEach((status) => {
+      const previous = groups.at(-1);
+      if (previous && previous.metricId === status.metricId && previous.status === status.status && nextDate(previous.end) === status.period) {
+        previous.end = status.period;
+        previous.days += 1;
+        return;
+      }
+      const definition = data.metricDefinitions.find((item) => item.id === status.metricId);
+      if (definition) groups.push({ ...definition, metricId: status.metricId, status: status.status, start: status.period, end: status.period, days: 1 });
+    });
+    return groups;
+  }
   function getPeriodIssues(filters = {}) {
     const observations = getObservations(filters);
     const issueStart = operationalDate(filters.start, filters.granularity);
@@ -267,5 +291,5 @@
       return { ...itemRows[0], costItem, ...summarizeCostRows(itemRows) };
     });
   }
-  window.CogDataService = { getActiveStandard, getObservations, evaluateMetric, getMetricSeries, getKpiSummaries, getEvents, getPeriodIssues, getCostRecords, getCostSummary, groupCostByItem };
+  window.CogDataService = { getActiveStandard, getObservations, evaluateMetric, getMetricSeries, getKpiSummaries, getEvents, getPeriodIssueOccurrences, getPeriodIssues, getCostRecords, getCostSummary, groupCostByItem };
 }());

@@ -23,12 +23,17 @@ function pearson(xs, ys) {
   return xSize && ySize ? +(numerator / (xSize * ySize)).toFixed(3) : null;
 }
 
+function displayDigits(definition) {
+  return definition?.id === 'steamUsage' ? 1 : Number.isInteger(definition?.decimals) ? definition.decimals : 3;
+}
+
 function analyzePeriod({ observations, standards, definitions, targetMetricId, relationships }) {
   const target = definitions.find((item) => item.id === targetMetricId);
   const latest = observations.at(-1);
   if (!target || !latest) return { status: 'unknown', candidates: [], limitation: '조회 기간에 분석할 데이터가 없습니다.' };
   const standard = activeStandard(standards, targetMetricId, latest.period);
-  const value = latest.metrics[targetMetricId];
+  const targetValues = observations.map((row) => row.metrics[targetMetricId]).filter(Number.isFinite);
+  const value = targetValues.reduce((sum, item) => sum + item, 0) / targetValues.length;
   const candidates = relationships
     .filter((item) => item.targetMetricId === targetMetricId)
     .map((relationship) => {
@@ -54,7 +59,7 @@ function analyzePeriod({ observations, standards, definitions, targetMetricId, r
         change,
         correlation,
         score: +(relativeChange * Math.abs(correlation) * (relationship.weight || 1)).toFixed(4),
-        reason: `${definition.label} ${change < 0 ? '감소' : '증가'} (${change.toFixed(3)}${definition.unit || ''})`,
+        reason: `${definition.label} ${change < 0 ? '감소' : '증가'} (${change.toFixed(displayDigits(definition))}${definition.unit || ''})`,
       };
     })
     .filter(Boolean)

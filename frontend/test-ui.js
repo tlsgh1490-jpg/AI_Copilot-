@@ -78,6 +78,10 @@ assert.ok(!app.includes('`상한 ${item.standard.warningMax}${item.unit}`'), 'Pr
 assert.ok(app.includes('조업 관리기준') && app.includes('손익 KPI 기준'), 'Standard comparison must explicitly distinguish operating management standards from profit KPI targets');
 assert.ok(app.includes('<th>손익 KPI 항목</th><th>손익 목표량</th><th>선택 기간 실제</th><th>손익 KPI 대비 증감</th><th>손익 영향</th>'), 'Profit table must keep its own KPI target terminology');
 assert.ok(!app.includes('const managementCostMetricMap'), 'Profit KPI rows must not be falsely mapped to unrelated operating metrics');
+assert.ok(['chemicalA', 'chemicalB', 'steamUsage', 'steamM01', 'steamM02', 'steamM03', 'steamM04', 'steamM05', 'steamM06'].every((metricId) => app.includes(`'${metricId}'`)), 'Operating standards must show chemical A/B unit rates and every steam module');
+assert.ok(app.includes("chemicalUnitRow('약품 A')") && app.includes("chemicalUnitRow('약품 B')") && app.includes("usageUnit: 'kg/천Nm³'"), 'Profit KPI table must split chemical A/B and convert both to the approved unit basis');
+assert.ok(app.includes('processStandardState') && app.includes('data-toggle-steam-details'), 'Steam module details must be collapsible in the standard comparison');
+assert.ok(app.includes('steamRate') && app.includes('선택 기간 평균 t/h'), 'Profit KPI steam values must use the selected-period average t/h instead of cumulative tonnes');
 assert.ok(app.includes('kpi-status-summary-grid'), 'KPI summaries must use a dense status-group layout');
 assert.ok(app.includes('profit-item-chart'), 'Profit impact must retain separate readable item charts');
 assert.ok(app.includes('period-profit-summary'), 'Operations overview needs a compact non-empty profit summary');
@@ -92,6 +96,19 @@ assert.ok(app.includes('brief-kpi-satisfaction'), 'Brief needs a KPI satisfactio
 assert.ok(app.includes("value.toFixed(1)") && app.includes("\\ubc31\\ub9cc\\uc6d0"), 'Profit impact must use million-won units consistently');
 assert.ok(app.includes('refreshDataDrivenViews'), 'Filter changes must refresh approved screen data together');
 assert.ok(html.includes('data-view="processOverview"'), 'Process overview must be an operations-overview subtab');
-assert.ok(html.includes('\ud654\uc131\uacf5\uc7a5 \uc6b4\uc601\ud604\ud669'), 'Overview navigation needs the approved name');
+assert.ok(html.includes('통합 운영현황'), 'Overview navigation needs the approved name');
+const requiredPresentationNames = [
+  '공정 운영 통합 분석 및 의사결정 지원 시스템',
+  '통합 운영현황',
+  'AI 분석 브리핑',
+  '공정 분석 현황',
+  '이상 분석·점검',
+  '손익 영향 분석',
+  '공정 데이터 비교 분석',
+  '관리기준 체계',
+];
+requiredPresentationNames.forEach((label) => assert.ok(html.includes(label) || app.includes(label), `Missing approved presentation name: ${label}`));
+assert.ok(app.includes("processAnalysis?.querySelector('.time-mode')?.remove()"), 'Process comparison must remove the unused time-mode checkbox');
+assert.ok(!html.includes('화성공장 AI Copilot'), 'The product title must not use Copilot');
 assert.ok(html.includes('type="datetime-local"'), 'Process comparison needs calendar-ready datetime inputs');
 console.log('UI detail regression checks passed');
