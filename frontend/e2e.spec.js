@@ -77,6 +77,16 @@ test('Brief distinguishes a normal period average from in-period management brea
   await expect(alert).toContainText('09.10 ~ 09.17');
 });
 
+test('Copilot shows one period summary without event scenario labels', async ({ page }) => {
+  await page.goto(appUrl);
+  await page.locator('[data-view="brief"]').first().click();
+  const copilot = page.locator('#brief .copilot');
+  await expect(copilot.locator('.topic-chips')).toHaveCount(0);
+  await expect(copilot).toContainText('선택 기간 종합 분석');
+  await expect(copilot).not.toContainText('EVENT_');
+  await expect(copilot).not.toContainText('EX07');
+});
+
 test('overview summary distinguishes a normal average from in-period management breaches', async ({ page }) => {
   await page.goto(appUrl);
   const filter = page.locator('#overview .overview-period-filter');

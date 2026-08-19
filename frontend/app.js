@@ -1255,8 +1255,11 @@ standardSearch?.addEventListener('input', () => renderStandardsFromData(standard
 renderStandardsFromData();
 
 function renderCopilotTopic(metricId) {
+  // Copilot is now a single period-wide summary. Keep the legacy topic
+  // renderer dormant when the old topic tabs are not present.
+  if (!document.querySelector('#brief .topic-chips')) return;
   const topicConfig = {
-    qualityContent: { title: 'EX07 · 품질함량 상승', conclusion: '품질함량 상승은 스팀 공급량 저하와 열교환 상태 변화의 연관 패턴입니다.' },
+    qualityContent: { title: '선택 기간 공정 이슈', conclusion: '선택 기간의 실제 관리기준 이탈과 연관 공정 변수를 함께 확인합니다.' },
     steamUsage: { title: '스팀 사용량 변화', conclusion: '스팀 사용량은 목표 및 관리기준 대비 수준을 우선 확인해야 합니다.' },
     gasOutletTemp: { title: '가스 출구온도', conclusion: '출구온도 변화와 설비 차압·스팀 공급량을 함께 점검해야 합니다.' },
   };
@@ -1288,7 +1291,7 @@ document.querySelectorAll('#brief .topic-chips button').forEach((button, index) 
   const metricId = ['qualityContent', 'steamUsage', 'gasOutletTemp'][index];
   renderCopilotTopic(metricId);
 }));
-renderCopilotTopic('qualityContent');
+if (document.querySelector('#brief .topic-chips')) renderCopilotTopic('qualityContent');
 
 function renderDiagnosisCandidateCard(diagnosis, event, primary) {
   const candidateCard = diagnosis.querySelector('.two-col .card:last-child');
